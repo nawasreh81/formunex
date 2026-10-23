@@ -11,14 +11,14 @@ Object.assign(T.ar,{lib:"مكتبة الكتب",libSub:"ارفع كتباً بص
  libNoText:"«{t}» لا يحتوي نصاً قابلاً للقراءة، فلم يُضف.",libNotPdf:"«{t}» صيغة غير مدعومة. المدعوم: PDF و Word (.docx) والصور (JPG / PNG).",libOcrQ:"«{t}» فيه {n} صفحة مصوّرة. قراءتها بالتعرّف الضوئي (OCR) تستغرق حوالي {m} دقيقة، ودقتها أقل من النص العادي. أبقِ الصفحة مفتوحة. متابعة؟",libOcr:"تعرّف ضوئي (OCR) على «{t}»: صفحة {p} من {n}",libOcrLoad:"تحميل أداة التعرّف الضوئي (أول مرة فقط)…",libFileFail:"حُفظ نص «{t}» لكن تعذّر رفع الملف الأصلي ({e}).",
  libErr:"تعذّر إضافة «{t}»: {e}",libResults:"{n} نتيجة",libNoRes:"لم أجد شيئاً في الكتب عن هذا.",libNeedCloud:"مكتبة الكتب تحتاج الاتصال بمساحة عمل الشركة (Supabase).",
  libNeedSql:"المكتبة غير مفعّلة في قاعدة البيانات بعد. شغّل ملف supabase/library.sql في Supabase مرة واحدة.",libRO:"يمكنك البحث والقراءة. رفع الكتب وحذفها للمدير وفريق البحث والتطوير.",
- libFromBooks:"من مكتبة الكتب:",libAsking:"أبحث في مكتبة الكتب…",libAskNone:"لم أجد في الكتب فقرة تطابق سؤالك. جرّب كلمات أدق، مثل اسم المادة أو العملية (مثلاً: «ليسيثين» أو «تبلور السكر»).",libAskEmpty:"لا توجد كتب في المكتبة بعد. ارفع كتاباً من «مكتبة الكتب» ثم اسألني.",libAskSql:"مكتبة الكتب غير مفعّلة بعد في قاعدة البيانات. شغّل ملف supabase/library.sql في Supabase مرة واحدة، ثم أعد فتح التطبيق.",libAskErr:"تعذّر البحث في الكتب الآن ({e}). تأكد من الاتصال بالإنترنت.",libChunks:"مقاطع",libLog:"سجل الرفع",libClear:"مسح",libLogHint:"إذا ظهر خطأ، صوّر هذه الرسالة وأرسلها.",libNoIdx:"لم يُفهرس، احذفه وارفعه مجدداً",libPage:"صفحة {p}",libAdded2:"أُضيف",libNoFile:"النص فقط"});
+ libFromBooks:"من مكتبة الكتب:",libAsking:"أبحث في مكتبة الكتب…",libAskNone:"لم أجد في الكتب فقرة تطابق سؤالك. جرّب كلمات أدق، مثل اسم المادة أو العملية (مثلاً: «ليسيثين» أو «تبلور السكر»).",libAskEmpty:"لا توجد كتب في المكتبة بعد. ارفع كتاباً من «مكتبة الكتب» ثم اسألني.",libAskSql:"مكتبة الكتب غير مفعّلة بعد في قاعدة البيانات. شغّل ملف supabase/library.sql في Supabase مرة واحدة، ثم أعد فتح التطبيق.",libAskErr:"تعذّر البحث في الكتب الآن ({e}). تأكد من الاتصال بالإنترنت.",libChunks:"مقاطع",libLog:"سجل الرفع",libDup:"«{t}» موجود في المكتبة من قبل، فلم يُرفع مرة ثانية.",libSearchErr:"تعذّر البحث: {e}",libClear:"مسح",libLogHint:"إذا ظهر خطأ، صوّر هذه الرسالة وأرسلها.",libNoIdx:"لم يُفهرس، احذفه وارفعه مجدداً",libPage:"صفحة {p}",libAdded2:"أُضيف",libNoFile:"النص فقط"});
 Object.assign(T.en,{lib:"Book library",libSub:"Upload books as PDF, Word or images to use as references. The assistant searches them and shows matching passages with the book and page.",
  libUpload:"Upload books (PDF / Word / images)",libSearch:"Search the books…",libBooks:"Books",libNone:"No books yet. Upload your first book.",libPages:"{n} pages",libOpen:"Open",libDel:"Delete",
  libDelQ:"Delete “{t}” and its text from the library for everyone?",libReading:"Reading “{t}”: page {p} of {n}",libSaving:"Saving “{t}”…",libAdded:"Added “{t}” ({n} pages)",
  libNoText:"“{t}” has no readable text, so it was not added.",libNotPdf:"“{t}” is not a supported format. Supported: PDF, Word (.docx) and images (JPG / PNG).",libOcrQ:"“{t}” has {n} scanned pages. Reading them with OCR takes about {m} min and is less accurate than normal text. Keep this page open. Continue?",libOcr:"OCR on “{t}”: page {p} of {n}",libOcrLoad:"Loading the OCR engine (first time only)…",libFileFail:"Saved the text of “{t}” but couldn't upload the original file ({e}).",
  libErr:"Couldn't add “{t}”: {e}",libResults:"{n} results",libNoRes:"Nothing in the books about this.",libNeedCloud:"The book library needs the company workspace connection (Supabase).",
  libNeedSql:"The library isn't set up in the database yet. Run supabase/library.sql in Supabase once.",libRO:"You can search and read. Uploading and deleting books is for administrators and R&D.",
- libFromBooks:"From the book library:",libAsking:"Searching the book library…",libAskNone:"I found no passage in the books that matches your question. Try more specific words, like an ingredient or process name.",libAskEmpty:"There are no books in the library yet. Upload one in “Book library”, then ask me.",libAskSql:"The book library isn't set up in the database yet. Run supabase/library.sql in Supabase once, then reopen the app.",libAskErr:"Couldn't search the books right now ({e}). Check the internet connection.",libChunks:"Passages",libLog:"Upload log",libClear:"Clear",libLogHint:"If you see an error, take a screenshot of this message and send it.",libNoIdx:"Not indexed: delete and upload again",libPage:"page {p}",libAdded2:"Added",libNoFile:"text only"});
+ libFromBooks:"From the book library:",libAsking:"Searching the book library…",libAskNone:"I found no passage in the books that matches your question. Try more specific words, like an ingredient or process name.",libAskEmpty:"There are no books in the library yet. Upload one in “Book library”, then ask me.",libAskSql:"The book library isn't set up in the database yet. Run supabase/library.sql in Supabase once, then reopen the app.",libAskErr:"Couldn't search the books right now ({e}). Check the internet connection.",libChunks:"Passages",libLog:"Upload log",libDup:"“{t}” is already in the library, so it was not uploaded again.",libSearchErr:"Search failed: {e}",libClear:"Clear",libLogHint:"If you see an error, take a screenshot of this message and send it.",libNoIdx:"Not indexed: delete and upload again",libPage:"page {p}",libAdded2:"Added",libNoFile:"text only"});
 
 IC.lib='<path d="M4 19V5a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/><path d="M20 19V5a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/><path d="M4 21h7M13 21h7"/>';
 ALL_TABS.splice(ALL_TABS.indexOf("know")+1,0,"lib");
@@ -43,7 +43,7 @@ function chunks(text){const t=text.replace(/\s+/g," ").trim();const out=[];let i
   const s=t.slice(i,j).trim();if(s.length>20)out.push(s);i=j}
  return out}
 
-let logs=[];let books=null,loading=false,missing=false,q="",results=null,searching=false,prog="",busy=false;
+let logs=[],searchErr="";let books=null,loading=false,missing=false,q="",results=null,searching=false,prog="",busy=false;
 const ctx=()=>window.FX_CTX?window.FX_CTX():null;
 const fill=(s,o)=>Object.entries(o).reduce((a,[k,v])=>a.split("{"+k+"}").join(v),s);
 async function loadBooks(){const c=ctx();if(!c||!c.org||loading)return;loading=true;
@@ -52,8 +52,8 @@ async function loadBooks(){const c=ctx();if(!c||!c.org||loading)return;loading=t
    if(!missing)logs.unshift({ok:false,msg:errText(error),at:new Date().toTimeString().slice(0,5)})}
   else{missing=false;books=data||[];
    // passages per book, so a book whose text was not saved stands out
-   await Promise.all(books.map(b=>c.sb.from("book_chunks").select("id",{count:"exact",head:true}).eq("book_id",b.id)
-    .then(r=>{b.chunks=r.error?null:r.count||0},()=>{b.chunks=null})))}}
+   const st=await c.sb.rpc("book_stats",{p_org:c.org}).then(r=>r,e=>({error:e}));
+   const n=st.error?null:Object.fromEntries((st.data||[]).map(r=>[r.book_id,+r.chunks]));books.forEach(b=>{b.chunks=n?n[b.id]||0:null})}}
  catch(x){books=books||[];logs.unshift({ok:false,msg:errText(x),at:new Date().toTimeString().slice(0,5)})}
  loading=false;if(tab==="lib")render()}
 async function search(text,limit){const c=ctx(),qq=queryOf(text);if(!c||!c.org||!qq)return [];
@@ -76,7 +76,7 @@ window.vLib=function(){const T=L(),c=ctx();
  if(books===null){loadBooks();return header(T.lib,T.libSub)+`<div class="panel"><p class="sub" style="margin:0">${T.loading||"…"}</p></div>`}
  if(missing)return header(T.lib,T.libSub)+`<div class="panel"><p class="warnline" style="margin:0">${T.libNeedSql}</p></div>`;
  const up=c.canWrite?`<label class="btn primary" style="cursor:pointer">＋ ${T.libUpload}<input id="libFile" type="file" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple hidden ${busy?"disabled":""}></label>`:`<span class="sub" style="font-size:12.5px">${T.libRO}</span>`;
- const res=results===null?"":`<div class="panel stack"><h2 style="margin:0">${results.length?fill(T.libResults,{n:results.length}):T.libNoRes}</h2>${results.map(r=>resultHTML(r,q)).join("")}</div>`;
+ const res=results===null?"":`<div class="panel stack"><h2 style="margin:0">${results.length?fill(T.libResults,{n:results.length}):searchErr?`<span style="color:var(--bad,#e06c6c)">${esc(fill(T.libSearchErr,{e:searchErr}))}</span>`:T.libNoRes}</h2>${results.map(r=>resultHTML(r,q)).join("")}</div>`;
  const list=books.length?`<div class="tablewrap"><table><thead><tr><th>${T.libBooks}</th><th class="num">${fill(T.libPages,{n:""}).trim()}</th><th class="num">${T.libChunks}</th><th>${T.libAdded2}</th><th></th></tr></thead><tbody>
   ${books.map(b=>`<tr><td><b>${esc(b.title)}</b></td><td class="num">${b.pages}</td><td class="num">${b.chunks==null?"—":b.chunks?b.chunks:`<span class="warnline" style="font-size:12px">0 · ${T.libNoIdx}</span>`}</td><td style="font-size:12.5px"><bdi dir="ltr" style="font-family:var(--f-mono)">${esc(String(b.created_at).slice(0,10))}</bdi></td>
    <td style="white-space:nowrap">${b.file_path?`<button class="mini" data-lopen="${b.id}">${T.libOpen}</button>`:`<span class="sub" style="font-size:12px">${T.libNoFile}</span>`}${c.canWrite?`<button class="x" data-ldel="${b.id}" aria-label="${T.libDel}">✕</button>`:""}</td></tr>`).join("")}
@@ -91,7 +91,7 @@ window.vLib=function(){const T=L(),c=ctx();
 
 window.bindLib=function(){const T=L(),c=ctx();if(!c||!c.org)return;
  const f=v("libForm");if(f)f.onsubmit=async e=>{e.preventDefault();q=v("libQ").value;if(!q.trim()){results=null;render();return}
-  searching=true;try{results=await search(q,20)}catch(x){results=[];toast(String(x.message||x))}searching=false;render()};
+  searching=true;searchErr="";try{results=await search(q,20)}catch(x){results=[];searchErr=errText(x)}searching=false;render()};
  const lc=v("libLogClr");if(lc)lc.onclick=()=>{logs=[];render()};
  const inp=v("libFile");if(inp)inp.onchange=()=>{const fs=[...inp.files];if(fs.length)addBooks(fs)};
  document.querySelectorAll("[data-lopen]").forEach(b=>b.onclick=async()=>{const bk=books.find(x=>x.id===b.dataset.lopen);if(!bk)return;
@@ -139,10 +139,13 @@ const errText=x=>{const m=String(x&&(x.message||x.error_description||x.error)||x
  else if(/size|too large|413/i.test(m+code))hint=lg()==="ar"?" — الملف أكبر من 50 ميغابايت.":" — The file is larger than 50 MB.";
  return m+(code?` (${code})`:"")+hint};
 async function addBooks(files){const c=ctx();if(!c||!c.org||busy)return;busy=true;const T=L();
+ // fresh list for the duplicate check (books may have changed on another device)
+ const fresh=await c.sb.from("books").select("id,title,file_name").eq("org_id",c.org);const have=fresh.error?(books||[]).slice():fresh.data;
  try{for(const file of files){const title=file.name.replace(/\.(pdf|docx?|jpe?g|png|webp|bmp|gif)$/i,"").trim()||file.name;
   const kind=kindOf(file);
   if(kind==="doc"){note(false,T.docOld);continue}
   if(!kind){note(false,fill(T.libNotPdf,{t:title}));continue}
+  if(have.some(b=>(b.file_name===file.name)||b.title.toLowerCase()===title.toLowerCase())){note(false,fill(T.libDup,{t:title}));continue}
   let bookId=null;
   try{const pages=kind==="pdf"?await readPdf(file,title):kind==="docx"?await readDocx(file):await readImage(file,title);
    const rows=[];pages.forEach((txt,i)=>chunks(txt).forEach(s=>rows.push({page:i+1,content:s,norm:norm(s)})));
@@ -154,7 +157,7 @@ async function addBooks(files){const c=ctx();if(!c||!c.org||busy)return;busy=tru
    const upl=await c.sb.storage.from("library").upload(path,file,{contentType:file.type||"application/octet-stream",upsert:true}).catch(e=>({error:e}));
    if(upl&&upl.error)note(false,fill(T.libFileFail,{t:title,e:errText(upl.error)}));
    else await c.sb.from("books").update({file_path:path}).eq("id",bookId);
-   note(true,fill(T.libAdded,{t:title,n:pages.length}))}
+   have.push({id:bookId,title,file_name:file.name});note(true,fill(T.libAdded,{t:title,n:pages.length}))}
   catch(x){console.warn("library",x);if(bookId)await c.sb.from("books").delete().eq("id",bookId).then(()=>{},()=>{});
    note(false,fill(T.libErr,{t:title,e:errText(x)}))}}}
  catch(x){note(false,errText(x))}

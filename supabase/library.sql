@@ -53,28 +53,58 @@ grant select, insert, update, delete on public.books to authenticated;
 grant select, insert on public.book_chunks to authenticated;
 grant usage, select on sequence public.book_chunks_id_seq to authenticated;
 
--- Search: passages that contain the most query words first (whole words, prefixes or parts of words, so Arabic
--- words with attached letters like و / ب / ال still match). p_query should already be normalised by the app.
-create or replace function public.search_books(p_org uuid, p_query text, p_limit int default 10)
+-- Search: passages that contain the most query words first. Words are matched as whole words or prefixes through the
+-- index; if that finds too little, also as parts of words (so Arabic words with attached letters like و / ب still match).
+-- p_query should already be normalised by the app. Runs as owner after one membership check, so it stays fast on large
+-- libraries (no per-row policy check), and looks at no more than 3000 candidate passages.
+drop function if exists public.search_books(uuid, text, int);
+create function public.search_books(p_org uuid, p_query text, p_limit int default 10)
 returns table (book_id uuid, title text, page int, content text, rank real)
-language sql stable security invoker set search_path = public as $$
-  with w as (
-    select distinct x as w
-    from regexp_split_to_table(regexp_replace(lower(coalesce(p_query, '')), '[&|!():*<>''\\%_]', ' ', 'g'), '\s+') as x
-    where length(x) > 1
-    limit 12
-  ), q as (
-    select to_tsquery('simple', string_agg(w || ':*', ' | ')) as tq, array_agg('%' || w || '%') as pats from w
-  )
-  select c.book_id, b.title, c.page, c.content,
-         ((select count(*) from w where position(w.w in c.norm) > 0) + ts_rank_cd(c.tsv, q.tq))::real as rank
-  from public.book_chunks c join public.books b on b.id = c.book_id, q
-  where c.org_id = p_org and q.tq is not null and (c.tsv @@ q.tq or c.norm like any (q.pats))
-  order by rank desc, c.page
-  limit greatest(1, least(coalesce(p_limit, 10), 50))
-$$;
+language plpgsql stable security definer set search_path = public as $$
+declare
+  v_words text[];
+  v_tq tsquery;
+  v_lim int := greatest(1, least(coalesce(p_limit, 10), 50));
+  v_found int;
+begin
+  if public.my_role(p_org) is null then return; end if;
+  select array_agg(distinct x) into v_words
+  from regexp_split_to_table(regexp_replace(lower(coalesce(p_query, '')), '[&|!():*<>''\\%_]', ' ', 'g'), '\s+') as x
+  where length(x) > 1;
+  if v_words is null then return; end if;
+  v_words := v_words[1:12];
+  select to_tsquery('simple', string_agg(w || ':*', ' | ')) into v_tq from unnest(v_words) w;
+
+  select count(*) into v_found from (select 1 from public.book_chunks where org_id = p_org and tsv @@ v_tq limit v_lim) x;
+  return query
+    with hits as (
+      select c.id, ((select count(*) from unnest(v_words) w where c.tsv @@ to_tsquery('simple', w || ':*')) + ts_rank_cd(c.tsv, v_tq))::real as score
+      from (select * from public.book_chunks where org_id = p_org and tsv @@ v_tq limit 3000) c
+      union all
+      select c.id, (select count(*) from unnest(v_words) w where position(w in c.norm) > 0)::real
+      from (select id, norm from public.book_chunks
+            where v_found < v_lim and org_id = p_org and not (tsv @@ v_tq)
+              and norm like any (select '%' || w || '%' from unnest(v_words) w where length(w) > 2)
+            limit 3000) c
+    )
+    select c.book_id, b.title, c.page, c.content, h.score
+    from hits h join public.book_chunks c on c.id = h.id join public.books b on b.id = c.book_id
+    order by h.score desc, c.page
+    limit v_lim;
+end $$;
 revoke all on function public.search_books(uuid, text, int) from public, anon;
 grant execute on function public.search_books(uuid, text, int) to authenticated;
+
+-- Passages per book, for the library list
+create or replace function public.book_stats(p_org uuid)
+returns table (book_id uuid, chunks bigint)
+language sql stable security definer set search_path = public as $$
+  select c.book_id, count(*) from public.book_chunks c
+  where c.org_id = p_org and public.my_role(p_org) is not null
+  group by c.book_id
+$$;
+revoke all on function public.book_stats(uuid) from public, anon;
+grant execute on function public.book_stats(uuid) to authenticated;
 
 create or replace function public.org_role_from_path(p_name text) returns text
 language sql stable security definer set search_path = public as $$
