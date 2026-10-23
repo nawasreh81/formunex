@@ -47,9 +47,15 @@ let logs=[];let books=null,loading=false,missing=false,q="",results=null,searchi
 const ctx=()=>window.FX_CTX?window.FX_CTX():null;
 const fill=(s,o)=>Object.entries(o).reduce((a,[k,v])=>a.split("{"+k+"}").join(v),s);
 async function loadBooks(){const c=ctx();if(!c||!c.org||loading)return;loading=true;
- const {data,error}=await c.sb.from("books").select("id,title,file_name,file_path,pages,created_at,book_chunks(count)").eq("org_id",c.org).order("created_at",{ascending:false});
- loading=false;if(data)data.forEach(b=>{b.chunks=b.book_chunks&&b.book_chunks[0]?b.book_chunks[0].count:0});if(error){missing=/books|relation|schema cache|does not exist/i.test(error.message||"");books=[];if(!missing)logs.unshift({ok:false,msg:errText(error),at:new Date().toTimeString().slice(0,5)})}else{missing=false;books=data}
- if(tab==="lib")render()}
+ try{const {data,error}=await c.sb.from("books").select("id,title,file_name,file_path,pages,created_at").eq("org_id",c.org).order("created_at",{ascending:false});
+  if(error){missing=/relation|schema cache|does not exist|PGRST205|42P01/i.test((error.message||"")+(error.code||""));books=[];
+   if(!missing)logs.unshift({ok:false,msg:errText(error),at:new Date().toTimeString().slice(0,5)})}
+  else{missing=false;books=data||[];
+   // passages per book, so a book whose text was not saved stands out
+   await Promise.all(books.map(b=>c.sb.from("book_chunks").select("id",{count:"exact",head:true}).eq("book_id",b.id)
+    .then(r=>{b.chunks=r.error?null:r.count||0},()=>{b.chunks=null})))}}
+ catch(x){books=books||[];logs.unshift({ok:false,msg:errText(x),at:new Date().toTimeString().slice(0,5)})}
+ loading=false;if(tab==="lib")render()}
 async function search(text,limit){const c=ctx(),qq=queryOf(text);if(!c||!c.org||!qq)return [];
  const {data,error}=await c.sb.rpc("search_books",{p_org:c.org,p_query:qq,p_limit:limit||10});if(error)throw error;return data||[]}
 
@@ -72,7 +78,7 @@ window.vLib=function(){const T=L(),c=ctx();
  const up=c.canWrite?`<label class="btn primary" style="cursor:pointer">＋ ${T.libUpload}<input id="libFile" type="file" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple hidden ${busy?"disabled":""}></label>`:`<span class="sub" style="font-size:12.5px">${T.libRO}</span>`;
  const res=results===null?"":`<div class="panel stack"><h2 style="margin:0">${results.length?fill(T.libResults,{n:results.length}):T.libNoRes}</h2>${results.map(r=>resultHTML(r,q)).join("")}</div>`;
  const list=books.length?`<div class="tablewrap"><table><thead><tr><th>${T.libBooks}</th><th class="num">${fill(T.libPages,{n:""}).trim()}</th><th class="num">${T.libChunks}</th><th>${T.libAdded2}</th><th></th></tr></thead><tbody>
-  ${books.map(b=>`<tr><td><b>${esc(b.title)}</b></td><td class="num">${b.pages}</td><td class="num">${b.chunks?b.chunks:`<span class="warnline" style="font-size:12px">0 · ${T.libNoIdx}</span>`}</td><td style="font-size:12.5px"><bdi dir="ltr" style="font-family:var(--f-mono)">${esc(String(b.created_at).slice(0,10))}</bdi></td>
+  ${books.map(b=>`<tr><td><b>${esc(b.title)}</b></td><td class="num">${b.pages}</td><td class="num">${b.chunks==null?"—":b.chunks?b.chunks:`<span class="warnline" style="font-size:12px">0 · ${T.libNoIdx}</span>`}</td><td style="font-size:12.5px"><bdi dir="ltr" style="font-family:var(--f-mono)">${esc(String(b.created_at).slice(0,10))}</bdi></td>
    <td style="white-space:nowrap">${b.file_path?`<button class="mini" data-lopen="${b.id}">${T.libOpen}</button>`:`<span class="sub" style="font-size:12px">${T.libNoFile}</span>`}${c.canWrite?`<button class="x" data-ldel="${b.id}" aria-label="${T.libDel}">✕</button>`:""}</td></tr>`).join("")}
   </tbody></table></div>`:`<p class="sub" style="margin:0">${T.libNone}</p>`;
  return header(T.lib,T.libSub,up)+`<div class="stack">
@@ -152,7 +158,7 @@ async function addBooks(files){const c=ctx();if(!c||!c.org||busy)return;busy=tru
   catch(x){console.warn("library",x);if(bookId)await c.sb.from("books").delete().eq("id",bookId).then(()=>{},()=>{});
    note(false,fill(T.libErr,{t:title,e:errText(x)}))}}}
  catch(x){note(false,errText(x))}
- await endOcr().catch(()=>{});busy=false;prog="";books=null;loadBooks()}
+ await endOcr().catch(()=>{});busy=false;prog="";results=null;const again=()=>{if(loading)return setTimeout(again,300);books=null;loadBooks()};again()}
 
 /* assistant: answer from the books. The built-in answers need a formula and can fail on an empty workspace,
    so when they fail or find nothing, the books give the answer (or a clear message why not). */
