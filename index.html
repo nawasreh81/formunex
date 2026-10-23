@@ -846,9 +846,9 @@ function findMat(s){s=String(s||"").trim();if(!s)return null;if(ING[s])return s;
  k=Object.keys(ING).find(k=>ING[k].ar.includes(s)||s.includes(ING[k].ar)||String(ING[k].en).toLowerCase().includes(l));return k||null}
 function saveFile(name,data){const d=DL||(LOCAL?localDL:null);if(!d){toast(L().dlNo);return}d.save({filename:name,data}).catch(e=>{if(e&&e.code!=="declined")toast(L().dlFail)})}
 const csvCell=v=>{v=String(v??"");return /[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
-function matsTemplate(){return "﻿"+[["code","name_ar","name_en","category","kcal","protein","fat","sat_fat","carbs","sugar","fiber","sodium_mg","cost_sar_kg","allergens","supplier","available","spec_notes"],
- ["RM-101","دقيق قمح 72٪","Wheat flour T72","flour",364,10.3,1,0.2,76,0.3,2.7,2,3.4,"gluten","مطاحن الخليج","yes","رطوبة ≤ 14٪، رماد 0.55٪، بروتين 10.5٪"],
- ["RM-205","حليب بودرة كامل الدسم","Whole milk powder","dairy",496,26,27,16.7,38,38,0,371,19,"milk","مزارع الوادي","yes","رطوبة ≤ 4٪، دهن 26–28٪"]].map(r=>r.map(csvCell).join(",")).join("\r\n")}
+function matsTemplate(){return "﻿"+[["code","rd_code","system_code","name_ar","name_en","category","kcal","protein","fat","sat_fat","carbs","sugar","fiber","sodium_mg","cost_sar_kg","allergens","supplier","available","spec_notes"],
+ ["RM-101","RD-FL-01","100245","دقيق قمح 72٪","Wheat flour T72","flour",364,10.3,1,0.2,76,0.3,2.7,2,3.4,"gluten","مطاحن الخليج","yes","رطوبة ≤ 14٪، رماد 0.55٪، بروتين 10.5٪"],
+ ["RM-205","RD-DA-05","100871","حليب بودرة كامل الدسم","Whole milk powder","dairy",496,26,27,16.7,38,38,0,371,19,"milk","مزارع الوادي","yes","رطوبة ≤ 4٪، دهن 26–28٪"]].map(r=>r.map(csvCell).join(",")).join("\r\n")}
 function apprTemplate(){return "﻿"+[["formula_code","formula_name","category","ingredient","percent","approved_date","notes"],
  ["AP-010","كعك بالسمسم","bakery","wheatflour",55,"2026-01-15","خط المخبوزات 2"],["AP-010","كعك بالسمسم","bakery","sugar",12,"",""],["AP-010","كعك بالسمسم","bakery","butter",15,"",""],["AP-010","كعك بالسمسم","bakery","sesame",8,"",""],["AP-010","كعك بالسمسم","bakery","ماء مثلج",9.5,"",""],["AP-010","كعك بالسمسم","bakery","salt",0.5,"",""]].map(r=>r.map(csvCell).join(",")).join("\r\n")}
 function importMats(objs){let n=0,u=0;const codes=[];
@@ -862,6 +862,8 @@ function importMats(objs){let n=0,u=0;const codes=[];
   const al=pick(o,["allergens","مسببات الحساسية","الحساسية"]);if(al!==""||!old)m.al=parseAl(al);
   const cat=pick(o,["category","الفئة","التصنيف"]);if(cat)m.cat=cat;const sup=pick(o,["supplier","المورد","المورّد"]);if(sup)m.supplier=sup;
   const av=pick(o,["available","التوفر","متاح","متوفر"]);if(av!==""||!old)m.avail=yes(av);
+  const rd=pick(o,["rd_code","r&d code","rnd code","rd","كود البحث والتطوير","كود البحث"]);if(rd)m.rdCode=rd;
+  const sy=pick(o,["system_code","system code","sys code","erp code","sap code","كود النظام","رمز النظام"]);if(sy)m.sysCode=sy;
   const nt=pick(o,["spec_notes","notes","specification","المواصفات","ملاحظات","مواصفات"]);if(nt)m.notes=nt;
   S.mats[code]=m;codes.push(code);old?u++:n++});
  return{n:n+u,u,codes}}
@@ -884,12 +886,13 @@ function vData(){
  return header(L().data,L().dataSub)+seg+(dataSub==="mats"?vMats():dataSub==="eval"?vEval():vAppr())}
 function vMats(){
  const T=L(),all=Object.keys(ING);const q=matQ.trim().toLowerCase();
- const keys=all.filter(k=>{const m=ING[k];if(matAvailOnly&&m.avail===false)return false;return !q||[k,m.ar,m.en,m.cat,m.supplier].join(" ").toLowerCase().includes(q)});
+ const keys=all.filter(k=>{const m=ING[k];if(matAvailOnly&&m.avail===false)return false;return !q||[k,m.ar,m.en,m.cat,m.supplier,m.rdCode,m.sysCode].join(" ").toLowerCase().includes(q)});
  const nAv=all.filter(k=>ING[k].avail!==false).length,nSp=all.filter(k=>(ING[k].specs||[]).length||ING[k].notes).length;
  const m=matEdit&&matEdit!=="new"?ING[matEdit]:null;
  const nf=(id,lbl,val,u="")=>`<label class="field">${lbl}${u?` <bdi dir="ltr" class="u">${u}</bdi>`:""}<input id="${id}" type="number" step="any" value="${val??""}"></label>`;
  const form=matEdit?`<form id="matForm" class="panel stack" style="margin-bottom:16px"><h2>${m?T.editMat+": "+esc(m[lg()]):T.newMat}</h2>
   <div class="fgrid"><label class="field">${T.code}<input id="mm_code" value="${m?esc(matEdit):""}" ${m?"readonly":""} placeholder="RM-101"></label>
+   <label class="field">R&amp;D code<input id="mm_rd" value="${m?esc(m.rdCode||""):""}" dir="ltr"></label><label class="field">System code<input id="mm_sys" value="${m?esc(m.sysCode||""):""}" dir="ltr"></label>
    <label class="field">${T.mName} (AR)<input id="mm_ar" required value="${m?esc(m.ar):""}"></label><label class="field">${T.mName} (EN)<input id="mm_en" value="${m?esc(m.en):""}"></label>
    <label class="field">${T.cat}<input id="mm_cat" value="${m?esc(m.cat||""):""}"></label><label class="field">${T.supplier}<input id="mm_sup" value="${m?esc(m.supplier||""):""}"></label>
    ${nf("mm_cost",T.costSar,m?m.cost:"")}</div>
@@ -905,8 +908,8 @@ function vMats(){
    <span class="eyebrow">${T.matsCount.replace("{n}",all.length).replace("{a}",nAv).replace("{s}",nSp)}</span></div>
   <div class="toolbar"><label class="btn primary">${T.importFile}<input type="file" id="impMats" accept="${FILE_ACCEPT}" multiple hidden></label><button class="btn" data-mx="tpl">${T.template}</button><button class="btn" data-mx="new">+ ${T.addMat}</button></div></div>
  ${form}
- <div class="tablewrap"><table><thead><tr><th>${T.code}</th><th>${T.ingredient}</th><th>${T.cat}</th><th class="num">kcal</th><th class="num">${T.protein}</th><th class="num">${T.fat}</th><th class="num">${T.sugar}</th><th class="num">${T.costkg}</th><th>${T.allergens}</th><th>${T.specs}</th><th>${T.avail}</th><th></th></tr></thead><tbody>
- ${keys.map(k=>{const x=ING[k],ns=(x.specs||[]).length+(x.notes?1:0);return `<tr style="${x.avail===false?"opacity:.55":""}"><td style="font-family:var(--f-mono);font-size:12.5px">${esc(k)}</td><td><b>${esc(x[lg()])}</b>${x.candidate?` <span class="pill st-discovery" style="font-size:11px">${X("مرشّحة","Candidate")}</span>`:""}${x.supplier?`<div class="sub" style="font-size:12px">${esc(x.supplier)}</div>`:""}</td><td>${x.cat?`<span class="tag">${esc(x.cat)}</span>`:""}</td>
+ <div class="tablewrap"><table><thead><tr><th>${T.code}</th><th>R&amp;D code</th><th>System code</th><th>${T.ingredient}</th><th>${T.cat}</th><th class="num">kcal</th><th class="num">${T.protein}</th><th class="num">${T.fat}</th><th class="num">${T.sugar}</th><th class="num">${T.costkg}</th><th>${T.allergens}</th><th>${T.specs}</th><th>${T.avail}</th><th></th></tr></thead><tbody>
+ ${keys.map(k=>{const x=ING[k],ns=(x.specs||[]).length+(x.notes?1:0);return `<tr style="${x.avail===false?"opacity:.55":""}"><td style="font-family:var(--f-mono);font-size:12.5px">${esc(k)}</td><td style="font-family:var(--f-mono);font-size:12.5px">${esc(x.rdCode||"")}</td><td style="font-family:var(--f-mono);font-size:12.5px">${esc(x.sysCode||"")}</td><td><b>${esc(x[lg()])}</b>${x.candidate?` <span class="pill st-discovery" style="font-size:11px">${X("مرشّحة","Candidate")}</span>`:""}${x.supplier?`<div class="sub" style="font-size:12px">${esc(x.supplier)}</div>`:""}</td><td>${x.cat?`<span class="tag">${esc(x.cat)}</span>`:""}</td>
   <td class="num">${fmt(x.kcal,0)}</td><td class="num">${fmt(x.pro)}</td><td class="num">${fmt(x.fat)}</td><td class="num">${fmt(x.sug)}</td><td class="num">${fmt(x.cost,2)}</td>
   <td><span class="tool" style="margin:0">${(x.al||[]).map(a=>`<span class="allergen">${AL[a]?AL[a][lg()]:a}</span>`).join("")}</span></td><td>${ns?`<span class="tag">${ns}</span>`:""}</td>
   <td><input type="checkbox" data-av="${esc(k)}" ${x.avail!==false?"checked":""} aria-label="${T.avail}"></td>
@@ -979,7 +982,7 @@ function bindData(){
    fm.onsubmit=e=>{e.preventDefault();let code=(v("mm_code").value.trim()||"RM-"+Date.now().toString(36).toUpperCase());const old=matEdit!=="new"?ING[matEdit]:null;
     if(!old&&ING[code]){toast(lg()==="ar"?"هذا الرمز مستخدم":"Code already in use");return}
     const m=Object.assign({specs:[]},old?JSON.parse(JSON.stringify(old)):{});const g=id=>num(v(id).value);
-    Object.assign(m,{ar:v("mm_ar").value.trim(),en:v("mm_en").value.trim()||v("mm_ar").value.trim(),cat:v("mm_cat").value.trim(),supplier:v("mm_sup").value.trim(),cost:g("mm_cost"),kcal:g("mm_kcal"),pro:g("mm_pro"),fat:g("mm_fat"),sat:g("mm_sat"),carb:g("mm_carb"),sug:g("mm_sug"),fib:g("mm_fib"),na:g("mm_na"),al:parseAl(v("mm_al").value),notes:v("mm_notes").value.trim(),avail:v("mm_av").checked});
+    Object.assign(m,{rdCode:v("mm_rd").value.trim(),sysCode:v("mm_sys").value.trim(),ar:v("mm_ar").value.trim(),en:v("mm_en").value.trim()||v("mm_ar").value.trim(),cat:v("mm_cat").value.trim(),supplier:v("mm_sup").value.trim(),cost:g("mm_cost"),kcal:g("mm_kcal"),pro:g("mm_pro"),fat:g("mm_fat"),sat:g("mm_sat"),carb:g("mm_carb"),sug:g("mm_sug"),fib:g("mm_fib"),na:g("mm_na"),al:parseAl(v("mm_al").value),notes:v("mm_notes").value.trim(),avail:v("mm_av").checked});
     S.mats[code]=m;matEdit=null;persist();render();toast(L().saved)};
    const sf=v("specFile");if(sf)sf.onchange=e=>{const k=matEdit;const m=JSON.parse(JSON.stringify(ING[k]));m.specs=m.specs||[];S.mats[k]=m;
     attachFiles(e.target.files,(f,t)=>{S.mats[k].specs.push({name:f.name,date:today(),text:t.slice(0,15000)})})};
@@ -1265,7 +1268,7 @@ function procChange(el){
  else if(el.dataset.r!==undefined)st.v[k][+el.dataset.r][el.dataset.c]=val;
  else st.v[k]=val;
  f.upd=today();persist();render()}
-v("view").addEventListener("change",e=>{const el=e.target;if(el.dataset&&el.dataset.si!==undefined&&!el.closest("[data-pact]"))procChange(el)});
+v("view").addEventListener("change",e=>{const el=e.target;if(el.dataset&&el.dataset.shw!==undefined){setSheetShow(S.cur,el.dataset.shw,el.value);return}if(el.dataset&&el.dataset.si!==undefined&&!el.closest("[data-pact]"))procChange(el)});
 v("view").addEventListener("click",e=>{
  const b=e.target.closest("[data-wb],[data-pact]");if(!b)return;
  if(b.dataset.wb){wbSub=b.dataset.wb;render();return}
@@ -1336,6 +1339,21 @@ function valLbl(f,val,m){
  if(f.t==="select"){const opts=f.from==="knives"?m.knives.map(k=>({v:k.id,ar:k.ar,en:k.en})):f.from==="plates"?m.plates.map(p=>({v:p,ar:"Ø "+p+" مم",en:"Ø "+p+" mm"})):f.opts;const o=opts.find(o=>String(o.v)===String(val));return o?tr(o):String(val)}
  return `<bdi dir="ltr">${esc(val)} ${f.u&&f.u!=="×"?f.u:""}</bdi>`}
 const CCP=["tOut","tMax","core"];
+/* how each ingredient is named on the formula sheet: full name, R&D code or System code (empty code falls back to the name) */
+let sheetShowRO={},shwOpen=false;
+const sheetShow=fid=>{const f=S.forms[fid];return (f&&f.sheetShow)||sheetShowRO[fid]||{all:"name",by:{}}};
+const showMode=(fid,k)=>{const s=sheetShow(fid);return (s.by&&s.by[k])||s.all||"name"};
+function sheetName(fid,k){const m=showMode(fid,k),x=ING[k]||{};const c=m==="rd"?x.rdCode:m==="sys"?x.sysCode:"";return c?`<bdi dir="ltr" style="font-family:'IBM Plex Mono',monospace">${esc(c)}</bdi>`:esc(ingName(k))}
+function setSheetShow(fid,k,val){shwOpen=true;const s=JSON.parse(JSON.stringify(sheetShow(fid)));s.by=s.by||{};
+ if(k==="*"){s.all=val;s.by={}}else if(val===s.all)delete s.by[k];else s.by[k]=val;
+ const f=S.forms[fid];if(window.FX_CTX&&!FX_CTX().canWrite){sheetShowRO[fid]=s;render();return}f.sheetShow=s;persist();render()}
+function sheetShowPanel(){const fid=S.cur,f=S.forms[fid];if(!f)return "";const s=sheetShow(fid),rows=f.rows.filter(r=>r[1]>0);
+ const opt=(sel,k)=>{const x=ING[k]||{};return [["name",X("الاسم الكامل","Full name")],["rd","R&D code"+(k&&!x.rdCode?" ("+X("فارغ","empty")+")":"")],["sys","System code"+(k&&!x.sysCode?" ("+X("فارغ","empty")+")":"")]].map(([v,l])=>`<option value="${v}" ${sel===v?"selected":""}>${l}</option>`).join("")};
+ return `<details class="panel" ${shwOpen?"open":""} ontoggle="shwOpen=this.open"><summary style="cursor:pointer;font-weight:600">${X("طريقة عرض المواد في الورقة","How materials appear on the sheet")}</summary>
+  <div class="stack" style="margin-top:10px"><label class="field" style="max-width:320px">${X("لكل المواد","For all materials")}<select data-shw="*">${opt(s.all||"name")}</select></label>
+  <div class="tablewrap"><table><thead><tr><th>${L().ingredient}</th><th>R&amp;D code</th><th>System code</th><th>${X("يظهر في الورقة","Shown on the sheet")}</th></tr></thead><tbody>
+  ${rows.map(([k])=>{const x=ING[k]||{};return `<tr><td>${esc(ingName(k))}</td><td style="font-family:var(--f-mono);font-size:12.5px">${esc(x.rdCode||"—")}</td><td style="font-family:var(--f-mono);font-size:12.5px">${esc(x.sysCode||"—")}</td><td><select data-shw="${esc(k)}">${opt(showMode(fid,k),k)}</select></td></tr>`}).join("")}
+  </tbody></table></div><p class="sub" style="margin:0;font-size:12.5px">${X("إذا كان الكود فارغاً يظهر اسم المادة.","If a code is empty, the material name is shown.")}</p></div></details>`}
 function sheetBody(){
  const fid=S.cur,f=S.forms[fid],c=calc(fid),t=L(),ar=lg()==="ar",p=S.projects.find(x=>x.id===f.proj);
  const kg=ar?"كغ":"kg",sum=c.sum||1,docNo=`PRS-${fid.toUpperCase().slice(0,6)}-V${f.ver}`;
@@ -1345,7 +1363,7 @@ function sheetBody(){
  <div class="meta"><div><span>${t.issued}</span><b>${today()}</b></div><div><span>${t.batch}</span><b>${fmt(S.batch,0)} ${kg}</b></div><div><span>${t.projLbl}</span><b>${p?esc(p[lg()]):"—"}</b></div>
   <div><span>${t.lot}</span><b></b></div><div><span>${t.line}</span><b></b></div><div><span>${t.prodDate}</span><b></b></div></div>`;
  h+=`<h2>1. ${t.recipeSec}</h2><table><thead><tr><th>#</th><th>${t.ingredient}</th><th class="n">%</th><th class="n">${t.qty} (${kg})</th><th>${t.weighed}</th><th class="bl">${t.lotNo}</th></tr></thead><tbody>
- ${rows.map(([k,pc],i)=>`<tr><td class="n">${i+1}</td><td>${ING[k].al.length?"<b>":""}${esc(ingName(k))}${ING[k].al.length?"</b>":""}</td><td class="n">${fmt(pc,2)}</td><td class="n">${fmt(pc/sum*S.batch,3)}</td><td style="text-align:center"><span class="box"></span></td><td></td></tr>`).join("")}
+ ${rows.map(([k,pc],i)=>`<tr><td class="n">${i+1}</td><td>${ING[k].al.length?"<b>":""}${sheetName(fid,k)}${ING[k].al.length?"</b>":""}</td><td class="n">${fmt(pc,2)}</td><td class="n">${fmt(pc/sum*S.batch,3)}</td><td style="text-align:center"><span class="box"></span></td><td></td></tr>`).join("")}
  <tr class="tot"><td></td><td>${t.total}</td><td class="n">${fmt(c.sum,2)}</td><td class="n">${fmt(S.batch,3)}</td><td></td><td></td></tr></tbody></table>
  <p style="margin:6px 0 0"><b>${t.allergens}:</b> ${c.al.length?c.al.map(a=>AL[a][lg()]).join(ar?"، ":", "):t.none}</p>`;
  h+=`<h2>2. ${t.methodSec}</h2><div class="lg">${t.ccpNote}</div>`;
@@ -1374,7 +1392,7 @@ const localDL={save:async({filename,data})=>{const u=URL.createObjectURL(new Blo
 function vSheet(){
  const btn=(LOCAL?`<button class="btn primary" data-pact="printSheet">${L().printBtn}</button>`:"")+(!dlReady?`<button class="btn" disabled>${L().dlWait}</button>`:DL?`<button class="btn ${LOCAL?"":"primary"}" data-pact="dlSheet">${L().download}</button>`:`<span class="warnline">${L().dlNo}</span>`);
  return `<style>${SHEET_CSS}</style><div class="stack"><div class="panel toolbar" style="justify-content:space-between;align-items:center"><p class="sub" style="margin:0;flex:1;min-width:240px">${L().sheetIntro}</p><div class="toolbar">${btn}</div></div>
- <div class="paperwrap"><div class="ps" dir="${lg()==="ar"?"rtl":"ltr"}" lang="${lg()}">${sheetBody()}</div></div></div>`}
+ ${sheetShowPanel()}<div class="paperwrap"><div class="ps" dir="${lg()==="ar"?"rtl":"ltr"}" lang="${lg()}">${sheetBody()}</div></div></div>`}
 function sheetDoc(){
  const f=S.forms[S.cur],ar=lg()==="ar";
  const doc=`<!doctype html><html lang="${lg()}" dir="${ar?"rtl":"ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(L().sheetTitle)} — ${esc(f.name[lg()])} v${f.ver}</title>
