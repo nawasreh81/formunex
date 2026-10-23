@@ -22,8 +22,8 @@ Object.assign(T.ar,{email:"البريد الإلكتروني",company:"اسم ا
  workspace:"مساحة العمل",sendReset:"إرسال رابط كلمة المرور",resetMailed:"أُرسل رابط تعيين كلمة المرور إلى {e}",remove:"إزالة",
  tempPw:"كلمة مرور مؤقتة",userAddedMail:"أُضيف المستخدم. إن كان تأكيد البريد مفعّلاً فعليه فتح رسالة التأكيد أولاً.",
  hint:"البيانات محفوظة في مساحة عمل شركتك وتتزامن بين الأجهزة.",authNote:"الحسابات وبيانات الشركة محفوظة في Supabase، ولا يرى بيانات شركتك إلا أعضاؤها.",
- demoTitle:"البيانات التجريبية",demoSub:"مساحة العمل فيها خلطات ومشاريع ومواد ومعدات تجريبية جاءت مع النسخة الأولى. احذفها لتبدأ ببياناتك فقط. ما أضفته أنت يبقى كما هو.",demoBtn:"حذف البيانات التجريبية",
- demoConfirm:"سيُحذف كل المحتوى التجريبي (الخلطات والمشاريع والمواد والمعدات والاختبارات والمستندات التجريبية) من مساحة العمل لكل المستخدمين. ما أضفته أنت لن يُحذف. هل تريد المتابعة؟",demoDone:"حُذف {n} عنصر تجريبي",
+ demoTitle:"البيانات التجريبية",demoSub:"مساحة العمل فيها بيانات تجريبية جاءت مع النسخة الأولى: خلطات ومشاريع ونتائج تقييم حسي ومواد ومعدات، وقائمة المكوّنات الأساسية. احذفها لتبدأ ببياناتك فقط. ما أضفته أنت يبقى كما هو.",demoBtn:"حذف البيانات التجريبية",
+ demoConfirm:"سيُحذف كل المحتوى التجريبي (الخلطات والمشاريع ونتائج التقييم الحسي والمواد والمعدات والمستندات، وقائمة المكوّنات الأساسية) من مساحة العمل لكل المستخدمين. ما أضفته أنت لن يُحذف. هل تريد المتابعة؟",demoDone:"حُذف {n} عنصر تجريبي",
  roleHelp:"مدير النظام: كل الشاشات وإدارة المستخدمين · البحث والتطوير: كل الشاشات والتعديل ما عدا إدارة المستخدمين · الإنتاج: عرض لوحة المشاريع وورقة الإنتاج والملصقات فقط."});
 Object.assign(T.en,{email:"Email",company:"Company name",signupTitle:"Create your company workspace",signupSub:"This creates a private workspace for your company with you as administrator. Add your team from the Users screen.",
  createOrg:"Create workspace",haveAccount:"I have an account — sign in",newCompany:"New company? Create a workspace",forgot:"Forgot password?",forgotTitle:"Reset your password",forgotSub:"Enter your email and we'll send a link to set a new password.",
@@ -35,8 +35,8 @@ Object.assign(T.en,{email:"Email",company:"Company name",signupTitle:"Create you
  workspace:"Workspace",sendReset:"Send password link",resetMailed:"Password link sent to {e}",remove:"Remove",
  tempPw:"Temporary password",userAddedMail:"User added. If email confirmation is on, they must open the confirmation email first.",
  hint:"Data is saved to your company workspace and syncs across devices.",authNote:"Accounts and company data are stored in Supabase. Only your company's members can see its data.",
- demoTitle:"Sample data",demoSub:"This workspace contains sample formulas, projects, materials and equipment that came with the prototype. Remove them to keep only your own data. Anything you added stays.",demoBtn:"Remove sample data",
- demoConfirm:"All sample content (formulas, projects, materials, equipment, tests and documents) will be removed from the workspace for every user. Anything you added is kept. Continue?",demoDone:"Removed {n} sample items",
+ demoTitle:"Sample data",demoSub:"This workspace contains sample data from the prototype: formulas, projects, sensory results, materials, equipment and the built-in ingredient list. Remove them to keep only your own data. Anything you added stays.",demoBtn:"Remove sample data",
+ demoConfirm:"All sample content (formulas, projects, sensory results, materials, equipment, documents and the built-in ingredient list) will be removed from the workspace for every user. Anything you added is kept. Continue?",demoDone:"Removed {n} sample items",
  roleHelp:"Administrator: every screen plus user management · R&D: every screen with editing, except user management · Production: view projects, production sheet and labels only."});
 
 const SEP="\u0001",PREFS=["lang","cur","batch","serving"],SKIP=new Set([...PREFS,"users"]);
@@ -66,6 +66,9 @@ function fromRecs(m){const by={};for(const r of m.values())(by[r.coll]=by[r.coll
   else{const r=rs.find(r=>r.id==="_");out[c]=r?r.data.v:null}}
  return out}
 window.FX_SYNC_TEST={canon,toRecs,fromRecs};
+/* once a workspace turns off the built-in ingredient list, only its own raw materials exist */
+const baseSyncIng=syncIng;
+syncIng=function(){if(!S.baseOff)return baseSyncIng();Object.keys(ING).forEach(k=>delete ING[k]);Object.entries(S.mats||{}).forEach(([k,m])=>ING[k]=m)};
 
 const canWrite=()=>!!ME&&(ME.role==="admin"||ME.role==="rnd");
 function localDirty(){const d=new Map();if(!canWrite())return d;const cur=toRecs(S);
@@ -152,7 +155,7 @@ const blankForm=()=>({name:{ar:"تركيبة جديدة",en:"New formula"},ver:1
 /* a new company starts empty, with one blank formula so the workbench has something to open */
 function seedOrg(){const d=demoState();
  for(const k of Object.keys(d))if(!SKIP.has(k))S[k]=Array.isArray(d[k])?[]:(d[k]&&typeof d[k]==="object")?{}:d[k];
- S.forms={f1:blankForm()};S.cur="f1"}
+ S.forms={f1:blankForm()};S.cur="f1";S.baseOff=true}
 /* remove only the sample items (same ids as the prototype's demo data); everything the team added stays */
 function removeDemo(){const d=demoState();let n=0;
  for(const k of Object.keys(d)){if(SKIP.has(k)||!S[k])continue;const dv=d[k];
@@ -160,11 +163,14 @@ function removeDemo(){const d=demoState();let n=0;
    const keep=S[k].filter(x=>!(x&&x.id!=null?ids.has(String(x.id)):js.has(canon(x))));n+=S[k].length-keep.length;S[k]=keep}
   else if(dv&&typeof dv==="object"&&S[k]&&typeof S[k]==="object")for(const id of Object.keys(dv))if(id in S[k]){delete S[k][id];n++}}
  const fids=new Set(Object.keys(S.forms||{}));
+ // built-in ingredient list: keep only the ones the team's own formulas use, as workspace materials
+ if(!S.baseOff){S.mats=S.mats||{};const used=new Set();Object.values(S.forms||{}).forEach(f=>(f.rows||[]).forEach(r=>used.add(r[0])));(S.approved||[]).forEach(a=>(a.rows||[]).forEach(r=>used.add(r[0])));
+  Object.keys(BASE).forEach(k=>{if(used.has(k)&&!S.mats[k]){S.mats[k]=JSON.parse(JSON.stringify(BASE[k]));S.mats[k].avail=true}else n++});S.baseOff=true}
  (S.projects||[]).forEach(p=>{if(Array.isArray(p.forms))p.forms=p.forms.filter(f=>fids.has(f))});
  if(!S.forms||!Object.keys(S.forms).length){S.forms={["f"+Date.now().toString(36)]:blankForm()}}
  if(!S.forms[S.cur])S.cur=Object.keys(S.forms)[0];
  return n}
-const hasDemo=()=>{const d=demoState();return Object.keys(d.forms).some(f=>S.forms&&S.forms[f]&&canon(S.forms[f].name)===canon(d.forms[f].name))||(S.projects||[]).some(p=>d.projects.some(q=>q.id===p.id&&q.en===p.en))};
+const hasDemo=()=>{if(!S.baseOff)return true;const d=demoState();return Object.keys(d.forms).some(f=>S.forms&&S.forms[f]&&canon(S.forms[f].name)===canon(d.forms[f].name))||(S.projects||[]).some(p=>d.projects.some(q=>q.id===p.id&&q.en===p.en))};
 async function boot(session){
  USER=session.user;bootedFor=USER.id;authInfo="";
  let ms=null;

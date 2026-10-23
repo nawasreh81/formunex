@@ -334,6 +334,7 @@ download:"تنزيل للطباعة",dlOk:"تم التنزيل. افتح الم�
 recipeSec:"الخلطة المطلوبة",methodSec:"طريقة العمل",signSec:"الاعتماد والتسليم",docNo:"رقم المستند",issued:"تاريخ الإصدار",projLbl:"المشروع",lot:"رقم التشغيلة",line:"خط الإنتاج",prodDate:"تاريخ الإنتاج",
 qty:"الكمية",weighed:"تم الوزن",lotNo:"رقم دفعة المادة",setting:"الإعداد",target:"المطلوب",actual:"الفعلي",ccpNote:"● حد حرج: يُقاس ويُسجَّل في كل تشغيلة",
 prepared:"أعدّه (البحث والتطوير)",approved:"اعتمده (الجودة)",supervisor:"استلمه (مشرف الخط)",nameSig:"الاسم / التوقيع / التاريخ",cutChain:"تركيب الطقم",printBtn:"طباعة",genBy:"صادرة من FormuNex",warnTitle:"تنبيه قبل التشغيل"});
+Object.assign(T.ar,{needMats:"لا توجد مواد خام بعد. أضف موادك من مكتبة البيانات أولاً."});Object.assign(T.en,{needMats:"No raw materials yet. Add your materials in the Data library first."});
 Object.assign(T.en,{equip:"Equipment",equipSub:"Your plant's machines and the tooling on hand: plates, knives and speed ranges. Used when designing trial steps.",
 recipeTab:"Ingredients & cost",procTab:"Process steps & equipment",procIntro:"Order the trial steps. Pick the machine for each step to get its settings: cutting set, speeds and temperatures.",
 addStep:"Add step",machine:"Machine",note:"Operating notes",addStage:"Add stage",addComp:"Add part to set",cutSys:"{n}-piece system",flow:"Product flow",auger:"Auger",
@@ -574,8 +575,8 @@ function vWork(){
   <thead><tr><th>${L().ingredient}</th><th class="num">${L().pct}</th><th class="num">${L().grams}</th><th class="num">${L().costkg}</th><th class="num">${L().costc}</th><th></th></tr></thead>
   <tbody>${f.rows.map(([k,p],i)=>`<tr><td><select data-row="${i}" data-f="k" aria-label="${L().ingredient}">${opts(k)}</select></td>
    <td class="num"><input type="number" step="0.1" min="0" value="${p}" data-row="${i}" data-f="p" aria-label="${L().pct}"></td>
-   <td class="num">${fmt(p/100*S.batch*1000,0)}</td><td class="num">${fmt(ING[k].cost,2)}</td>
-   <td class="num">${c.costKg>0?fmt(ING[k].cost*p/100/(c.costKg*c.sum/100)*100,1)+"%":"—"}</td>
+   <td class="num">${fmt(p/100*S.batch*1000,0)}</td><td class="num">${ING[k]?fmt(ING[k].cost,2):"—"}</td>
+   <td class="num">${c.costKg>0&&ING[k]?fmt(ING[k].cost*p/100/(c.costKg*c.sum/100)*100,1)+"%":"—"}</td>
    <td><button class="x" data-del="${i}" aria-label="delete">✕</button></td></tr>`).join("")}
    <tr class="tfoot"><td>${L().total}</td><td class="num">${fmt(c.sum,2)}</td><td class="num">${fmt(c.sum/100*S.batch*1000,0)}</td><td></td><td class="num">100%</td><td></td></tr>
   </tbody></table></div>
@@ -600,7 +601,7 @@ function bindWork(){
  if(wbSub!=="recipe")return;
  document.querySelectorAll("[data-row]").forEach(el=>el.onchange=e=>{const i=+el.dataset.row;if(el.dataset.f==="k")f.rows[i][0]=el.value;else f.rows[i][1]=Math.max(0,+el.value||0);f.upd=today();persist();render()});
  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{f.rows.splice(+b.dataset.del,1);persist();render()});
- v("addRow").onclick=()=>{f.rows.push(["water",0]);persist();render()};
+ v("addRow").onclick=()=>{const k=ING.water?"water":Object.keys(ING)[0];if(!k){toast(L().needMats);go("data");return}f.rows.push([k,0]);persist();render()};
  v("approveBtn").onclick=()=>approveCurrent();
  v("newVer").onclick=()=>{const id="f"+Date.now().toString(36);const vers=Object.values(S.forms).filter(x=>x.proj===f.proj).map(x=>x.ver);const nv=Math.max(...vers)+1;
   S.forms[id]={name:{...f.name},ver:nv,proj:f.proj,upd:today(),rows:f.rows.map(r=>[...r]),proc:JSON.parse(JSON.stringify(f.proc||[]))};const p=S.projects.find(p=>p.id===f.proj);if(p)p.forms.push(id);
