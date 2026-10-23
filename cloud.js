@@ -11,6 +11,7 @@ window.FX_CLOUD=true;
 const APP_URL=location.origin+location.pathname;
 const sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.FX_SB=sb;
+window.FX_CTX=()=>({sb,org:ORG,canWrite:canWrite()});
 
 Object.assign(T.ar,{loginSub:"أدخل بريدك الإلكتروني وكلمة المرور.",email:"البريد الإلكتروني",company:"اسم الشركة",signupTitle:"إنشاء مساحة عمل لشركتك",signupSub:"تُنشأ مساحة عمل خاصة بشركتك وتكون أنت مديرها، ثم تضيف فريقك من شاشة المستخدمين.",
  createOrg:"إنشاء مساحة العمل",haveAccount:"لدي حساب — تسجيل الدخول",newCompany:"شركة جديدة؟ أنشئ مساحة عمل",forgot:"نسيت كلمة المرور؟",forgotTitle:"استعادة كلمة المرور",forgotSub:"أدخل بريدك وسنرسل لك رابطاً لتعيين كلمة مرور جديدة.",

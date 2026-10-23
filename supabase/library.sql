@@ -1,0 +1,95 @@
+-- FormuNex book library: books (PDF, Word, images) per company, their text split by page, and full-text search.
+-- Run once after schema.sql: Supabase dashboard -> SQL Editor -> New query -> paste -> Run. Safe to run again.
+
+create table if not exists public.books (
+  id          uuid primary key default gen_random_uuid(),
+  org_id      uuid not null references public.orgs(id) on delete cascade,
+  title       text not null check (length(trim(title)) between 1 and 300),
+  file_name   text,
+  file_path   text,            -- object path in the "library" storage bucket, null if only the text was saved
+  pages       int not null default 0,
+  size_bytes  bigint,
+  uploaded_by uuid default auth.uid(),
+  created_at  timestamptz not null default now()
+);
+create index if not exists books_org_idx on public.books(org_id);
+
+-- One row per passage. content is the original text shown to people; norm is the same text
+-- normalised by the app (Arabic letter variants unified, diacritics removed, lower case) for search.
+create table if not exists public.book_chunks (
+  id      bigserial primary key,
+  org_id  uuid not null references public.orgs(id) on delete cascade,
+  book_id uuid not null references public.books(id) on delete cascade,
+  page    int not null,
+  content text not null,
+  norm    text not null,
+  tsv     tsvector generated always as (to_tsvector('simple', norm)) stored
+);
+create index if not exists book_chunks_tsv_idx on public.book_chunks using gin (tsv);
+create index if not exists book_chunks_book_idx on public.book_chunks(book_id);
+
+alter table public.books enable row level security;
+alter table public.book_chunks enable row level security;
+
+drop policy if exists books_read on public.books;
+create policy books_read on public.books for select to authenticated using (public.my_role(org_id) is not null);
+drop policy if exists books_write on public.books;
+create policy books_write on public.books for insert to authenticated with check (public.my_role(org_id) in ('admin','rnd'));
+drop policy if exists books_update on public.books;
+create policy books_update on public.books for update to authenticated
+  using (public.my_role(org_id) in ('admin','rnd')) with check (public.my_role(org_id) in ('admin','rnd'));
+drop policy if exists books_delete on public.books;
+create policy books_delete on public.books for delete to authenticated using (public.my_role(org_id) in ('admin','rnd'));
+
+drop policy if exists chunks_read on public.book_chunks;
+create policy chunks_read on public.book_chunks for select to authenticated using (public.my_role(org_id) is not null);
+drop policy if exists chunks_write on public.book_chunks;
+create policy chunks_write on public.book_chunks for insert to authenticated
+  with check (public.my_role(org_id) in ('admin','rnd')
+              and exists (select 1 from public.books b where b.id = book_id and b.org_id = book_chunks.org_id));
+-- chunks are removed together with their book (on delete cascade)
+
+grant select, insert, update, delete on public.books to authenticated;
+grant select, insert on public.book_chunks to authenticated;
+grant usage, select on sequence public.book_chunks_id_seq to authenticated;
+
+-- Search: any of the words (prefix match), best passages first. p_query should already be normalised.
+create or replace function public.search_books(p_org uuid, p_query text, p_limit int default 10)
+returns table (book_id uuid, title text, page int, content text, rank real)
+language sql stable security invoker set search_path = public as $$
+  with q as (
+    select to_tsquery('simple', string_agg(w || ':*', ' | ')) as tq
+    from regexp_split_to_table(regexp_replace(coalesce(p_query, ''), '[&|!():*<>''\\]', ' ', 'g'), '\s+') as w
+    where length(w) > 1
+  )
+  select c.book_id, b.title, c.page, c.content, ts_rank_cd(c.tsv, q.tq) as rank
+  from public.book_chunks c join public.books b on b.id = c.book_id, q
+  where c.org_id = p_org and q.tq is not null and c.tsv @@ q.tq
+  order by rank desc, c.page
+  limit greatest(1, least(coalesce(p_limit, 10), 50))
+$$;
+revoke all on function public.search_books(uuid, text, int) from public, anon;
+grant execute on function public.search_books(uuid, text, int) to authenticated;
+
+-- Book files: private bucket, one folder per company (<org id>/<book id>.<ext>)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('library', 'library', false, 52428800, array['application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','image/webp','image/gif','image/bmp'])
+on conflict (id) do update set allowed_mime_types = excluded.allowed_mime_types, file_size_limit = excluded.file_size_limit;
+
+create or replace function public.org_role_from_path(p_name text) returns text
+language sql stable security definer set search_path = public as $$
+  select case when split_part(p_name, '/', 1) ~ '^[0-9a-f-]{36}$'
+              then public.my_role(split_part(p_name, '/', 1)::uuid) end
+$$;
+grant execute on function public.org_role_from_path(text) to authenticated;
+
+drop policy if exists library_read on storage.objects;
+create policy library_read on storage.objects for select to authenticated
+  using (bucket_id = 'library' and public.org_role_from_path(name) is not null);
+drop policy if exists library_insert on storage.objects;
+create policy library_insert on storage.objects for insert to authenticated
+  with check (bucket_id = 'library' and public.org_role_from_path(name) in ('admin','rnd'));
+drop policy if exists library_delete on storage.objects;
+create policy library_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'library' and public.org_role_from_path(name) in ('admin','rnd'));

@@ -1,6 +1,6 @@
 /* FormuNex service worker: app shell offline, file-reader libraries and fonts cached after first use */
-const VERSION = "fx-v9";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png", "./icons/icon.svg", "./cloud.js", "./config.js", "./vendor/supabase-2.118.0.js"];
+const VERSION = "fx-v10";
+const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png", "./icons/icon.svg", "./cloud.js", "./library.js", "./config.js", "./vendor/supabase-2.118.0.js"];
 const RUNTIME = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 
 self.addEventListener("install", e => {

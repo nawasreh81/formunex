@@ -1716,12 +1716,13 @@ function render(){
  if(!ME){v("view").innerHTML=vAuth();bindAuth();return}
  if(!allowedTabs().includes(tab))tab="dash";
  if(ME.role==="production")wbSub="sheet";
- const V={users:vUsers,dash:vDash,work:vWork,equip:vEquip,data:vData,sens:vSens,know:vKnow,ai:vAI,label:vLabel};
+ const V={users:vUsers,dash:vDash,work:vWork,equip:vEquip,data:vData,sens:vSens,know:vKnow,ai:vAI,label:vLabel,lib:window.vLib};
+ if(!V.lib)delete V.lib;
  if(!V[tab])tab="dash";
  if(!S.forms[S.cur])S.cur=Object.keys(S.forms)[0];
  if(!S.forms[cmpA])cmpA=Object.keys(S.forms)[0];if(!S.forms[cmpB])cmpB=Object.keys(S.forms)[0];
  v("view").innerHTML=V[tab]();
- ({users:bindUsers,work:bindWork,equip:bindEquip,data:bindData,sens:bindSens,know:bindKnow,ai:bindAI,label:bindLabel}[tab]||(()=>{}))();
+ ({users:bindUsers,work:bindWork,equip:bindEquip,data:bindData,sens:bindSens,know:bindKnow,ai:bindAI,label:bindLabel,lib:window.bindLib}[tab]||(()=>{}))();
  document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{S.cur=b.dataset.open;go("work")});
 }
 if(!S.users)S.users=[];loadSession();
@@ -1788,5 +1789,6 @@ Object.assign(T.en,{install:"Install app",installed:"FormuNex installed",iosInst
 <script src="config.js"></script>
 <script src="vendor/supabase-2.118.0.js"></script>
 <script src="cloud.js"></script>
+<script src="library.js"></script>
 </body>
 </html>
