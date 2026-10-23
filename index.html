@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="FormuNex — منصة البحث والتطوير الغذائي · Food R&amp;D platform">
-<meta name="theme-color" content="#16231D">
+<meta name="theme-color" content="#050505">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1728,6 +1728,24 @@ if(!S.users)S.users=[];loadSession();
 render();
 </script>
 
+
+<style id="fxTheme">
+/* Gold & black theme, matching the app icon */
+html:root:root{
+  --bg:#0B0B0B; --surface:#151515; --sunk:#1E1D1A; --line:#2F2A20; --ink:#F2EDE3; --muted:#A8A090;
+  --accent:#D4A945; --accent-ink:#0B0B0B; --saffron:#F3E7C6; --saffron-soft:#2C2312;
+  --good:#7FCB98; --warn:#E9B24E; --bad:#F08C80; --grid:rgba(212,169,69,.045);
+  --side:#050505; --side-ink:#EDE6D6; --side-mute:#8E8676; --gold:linear-gradient(135deg,#F8E3A3 0%,#D4A945 45%,#B07F22 70%,#E9C977 100%);
+  color-scheme:dark}
+.brand .mark{background:#050505 url("icons/icon-192.png?v=3") center/cover no-repeat;color:transparent;box-shadow:0 0 0 1px rgba(212,169,69,.35)}
+.brand b{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+aside{border-inline-end:1px solid rgba(212,169,69,.18)}
+.btn.primary{background:var(--gold);color:#0B0B0B;border-color:transparent}
+nav button.on{box-shadow:inset 3px 0 0 #D4A945}
+[dir="rtl"] nav button.on{box-shadow:inset -3px 0 0 #D4A945}
+@media (max-width:760px){nav button.on{box-shadow:inset 0 -3px 0 #D4A945!important}}
+@media print{html:root:root{--bg:#fff;--surface:#fff;--sunk:#f3f3f3;--line:#ccc;--ink:#111;--muted:#555;--accent:#8a6a1f;--accent-ink:#fff;color-scheme:light}}
+</style>
 
 <style>
 /* Installed-app polish: no pull-to-refresh bounce, no tap flash, bottom safe area */

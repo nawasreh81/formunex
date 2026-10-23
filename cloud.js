@@ -12,7 +12,7 @@ const APP_URL=location.origin+location.pathname;
 const sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.FX_SB=sb;
 
-Object.assign(T.ar,{email:"البريد الإلكتروني",company:"اسم الشركة",signupTitle:"إنشاء مساحة عمل لشركتك",signupSub:"تُنشأ مساحة عمل خاصة بشركتك وتكون أنت مديرها، ثم تضيف فريقك من شاشة المستخدمين.",
+Object.assign(T.ar,{loginSub:"أدخل بريدك الإلكتروني وكلمة المرور.",email:"البريد الإلكتروني",company:"اسم الشركة",signupTitle:"إنشاء مساحة عمل لشركتك",signupSub:"تُنشأ مساحة عمل خاصة بشركتك وتكون أنت مديرها، ثم تضيف فريقك من شاشة المستخدمين.",
  createOrg:"إنشاء مساحة العمل",haveAccount:"لدي حساب — تسجيل الدخول",newCompany:"شركة جديدة؟ أنشئ مساحة عمل",forgot:"نسيت كلمة المرور؟",forgotTitle:"استعادة كلمة المرور",forgotSub:"أدخل بريدك وسنرسل لك رابطاً لتعيين كلمة مرور جديدة.",
  sendLink:"إرسال الرابط",resetSent:"إذا كان البريد مسجلاً فستصلك رسالة خلال دقائق.",checkEmail:"أرسلنا رسالة تأكيد إلى {e}. افتح الرابط في الرسالة ثم سجّل الدخول.",
  recoverTitle:"تعيين كلمة مرور جديدة",noOrgTitle:"لست عضواً في أي مساحة عمل",noOrgSub:"اطلب من مدير النظام في شركتك إضافة بريدك، أو أنشئ مساحة عمل جديدة لشركتك.",
@@ -25,7 +25,7 @@ Object.assign(T.ar,{email:"البريد الإلكتروني",company:"اسم ا
  demoTitle:"البيانات التجريبية",demoSub:"مساحة العمل فيها بيانات تجريبية جاءت مع النسخة الأولى: خلطات ومشاريع ونتائج تقييم حسي ومواد ومعدات، وقائمة المكوّنات الأساسية. احذفها لتبدأ ببياناتك فقط. ما أضفته أنت يبقى كما هو.",demoBtn:"حذف البيانات التجريبية",
  demoConfirm:"سيُحذف كل المحتوى التجريبي (الخلطات والمشاريع ونتائج التقييم الحسي والمواد والمعدات والمستندات، وقائمة المكوّنات الأساسية) من مساحة العمل لكل المستخدمين. ما أضفته أنت لن يُحذف. هل تريد المتابعة؟",demoDone:"حُذف {n} عنصر تجريبي",
  roleHelp:"مدير النظام: كل الشاشات وإدارة المستخدمين · البحث والتطوير: كل الشاشات والتعديل ما عدا إدارة المستخدمين · الإنتاج: عرض لوحة المشاريع وورقة الإنتاج والملصقات فقط."});
-Object.assign(T.en,{email:"Email",company:"Company name",signupTitle:"Create your company workspace",signupSub:"This creates a private workspace for your company with you as administrator. Add your team from the Users screen.",
+Object.assign(T.en,{loginSub:"Enter your email and password.",email:"Email",company:"Company name",signupTitle:"Create your company workspace",signupSub:"This creates a private workspace for your company with you as administrator. Add your team from the Users screen.",
  createOrg:"Create workspace",haveAccount:"I have an account — sign in",newCompany:"New company? Create a workspace",forgot:"Forgot password?",forgotTitle:"Reset your password",forgotSub:"Enter your email and we'll send a link to set a new password.",
  sendLink:"Send link",resetSent:"If that email is registered, a message will arrive in a few minutes.",checkEmail:"We sent a confirmation email to {e}. Open the link in it, then sign in.",
  recoverTitle:"Set a new password",noOrgTitle:"You're not in a workspace yet",noOrgSub:"Ask your company's administrator to add your email, or create a new workspace for your company.",
