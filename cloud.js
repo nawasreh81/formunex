@@ -243,7 +243,7 @@ vAuth=function(){const T=L();
  const btn={signin:T.signIn,signup:T.createOrg,forgot:T.sendLink,recover:T.changePw,noorg:T.createOrg}[authMode];
  const links={signin:[["signup",T.newCompany],["forgot",T.forgot]],signup:[["signin",T.haveAccount]],forgot:[["signin",T.haveAccount]],sent:[["signin",T.haveAccount]],noorg:[["out",T.logout]],disabled:[["out",T.logout]]}[authMode]||[];
  return `<div class="authwrap"><div class="panel authcard stack">
-  <div class="brand"><div class="mark">F</div><div><b>FormuNex</b><small>${T.tagline}</small></div></div>
+  <div class="brand"><div class="mark"><img src="icons/icon-192.png?v=4" alt="" width="36" height="36"></div><div><b>FormuNex</b><small>${T.tagline}</small></div></div>
   ${M[0]||M[1]?`<div>${M[0]?`<h1 style="font-size:22px">${M[0]}</h1>`:""}${M[1]?`<p class="sub" style="margin-top:4px">${esc(M[1])}</p>`:""}</div>`:""}
   ${btn?`<form id="authForm" class="stack" novalidate>${M[2]}
    <div id="authErr" class="warnline" role="alert">${authMode!=="sent"&&authInfo?esc(authInfo):""}</div>

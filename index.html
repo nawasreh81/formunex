@@ -238,7 +238,7 @@ td select.sm{min-width:120px}
 
 <div class="app">
   <aside>
-    <div class="brand"><div class="mark">F</div><div><b data-i="brand">FormuNex</b><small data-i="tagline">منصة البحث والتطوير الغذائي</small></div></div>
+    <div class="brand"><div class="mark"><img src="icons/icon-192.png?v=4" alt="" width="36" height="36"></div><div><b data-i="brand">FormuNex</b><small data-i="tagline">منصة البحث والتطوير الغذائي</small></div></div>
     <nav id="nav"></nav>
     <div class="side-foot">
       <div id="userBox"></div>
@@ -1639,7 +1639,7 @@ function vAuth(){
  const T=L(),setup=!(S.users&&S.users.length);
  const f=(id,lbl,type="text",ac="")=>`<label class="field">${lbl}<input id="${id}" type="${type}" ${ac?`autocomplete="${ac}"`:""} required></label>`;
  return `<div class="authwrap"><div class="panel authcard stack">
-  <div class="brand"><div class="mark">F</div><div><b>FormuNex</b><small>${T.tagline}</small></div></div>
+  <div class="brand"><div class="mark"><img src="icons/icon-192.png?v=4" alt="" width="36" height="36"></div><div><b>FormuNex</b><small>${T.tagline}</small></div></div>
   <div><h1 style="font-size:22px">${setup?T.setupTitle:T.login}</h1><p class="sub" style="margin-top:4px">${setup?T.setupSub:T.loginSub}</p></div>
   <form id="authForm" class="stack" novalidate>
    ${setup?f("au_name",T.fullName,"text","name"):""}
@@ -1737,7 +1737,13 @@ html:root:root{
   --good:#7FCB98; --warn:#E9B24E; --bad:#F08C80; --grid:rgba(212,169,69,.045);
   --side:#050505; --side-ink:#EDE6D6; --side-mute:#8E8676; --gold:linear-gradient(135deg,#F8E3A3 0%,#D4A945 45%,#B07F22 70%,#E9C977 100%);
   color-scheme:dark}
-.brand .mark{background:#050505 url("icons/icon-192.png?v=4") center/cover no-repeat;color:transparent;box-shadow:0 0 0 1px rgba(212,169,69,.35)}
+.brand .mark{background:#050505;overflow:hidden;padding:0;box-shadow:0 0 0 1px rgba(212,169,69,.35)}
+.brand .mark img{display:block;width:100%;height:100%}
+aside .brand .mark{width:42px;height:42px;border-radius:11px}
+.authcard .brand{flex-direction:column;text-align:center;gap:12px}
+.authcard .brand .mark{width:104px;height:104px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 0 1px rgba(212,169,69,.4)}
+.authcard .brand b{font-size:26px}
+@media (max-width:760px){aside .brand .mark{width:36px;height:36px;border-radius:10px}}
 .brand b{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent!important}
 aside{border-inline-end:1px solid rgba(212,169,69,.18)}
 .btn.primary{background:var(--gold);color:#0B0B0B;border-color:transparent}
