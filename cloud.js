@@ -22,6 +22,8 @@ Object.assign(T.ar,{email:"البريد الإلكتروني",company:"اسم ا
  workspace:"مساحة العمل",sendReset:"إرسال رابط كلمة المرور",resetMailed:"أُرسل رابط تعيين كلمة المرور إلى {e}",remove:"إزالة",
  tempPw:"كلمة مرور مؤقتة",userAddedMail:"أُضيف المستخدم. إن كان تأكيد البريد مفعّلاً فعليه فتح رسالة التأكيد أولاً.",
  hint:"البيانات محفوظة في مساحة عمل شركتك وتتزامن بين الأجهزة.",authNote:"الحسابات وبيانات الشركة محفوظة في Supabase، ولا يرى بيانات شركتك إلا أعضاؤها.",
+ demoTitle:"البيانات التجريبية",demoSub:"مساحة العمل فيها خلطات ومشاريع ومواد ومعدات تجريبية جاءت مع النسخة الأولى. احذفها لتبدأ ببياناتك فقط. ما أضفته أنت يبقى كما هو.",demoBtn:"حذف البيانات التجريبية",
+ demoConfirm:"سيُحذف كل المحتوى التجريبي (الخلطات والمشاريع والمواد والمعدات والاختبارات والمستندات التجريبية) من مساحة العمل لكل المستخدمين. ما أضفته أنت لن يُحذف. هل تريد المتابعة؟",demoDone:"حُذف {n} عنصر تجريبي",
  roleHelp:"مدير النظام: كل الشاشات وإدارة المستخدمين · البحث والتطوير: كل الشاشات والتعديل ما عدا إدارة المستخدمين · الإنتاج: عرض لوحة المشاريع وورقة الإنتاج والملصقات فقط."});
 Object.assign(T.en,{email:"Email",company:"Company name",signupTitle:"Create your company workspace",signupSub:"This creates a private workspace for your company with you as administrator. Add your team from the Users screen.",
  createOrg:"Create workspace",haveAccount:"I have an account — sign in",newCompany:"New company? Create a workspace",forgot:"Forgot password?",forgotTitle:"Reset your password",forgotSub:"Enter your email and we'll send a link to set a new password.",
@@ -33,6 +35,8 @@ Object.assign(T.en,{email:"Email",company:"Company name",signupTitle:"Create you
  workspace:"Workspace",sendReset:"Send password link",resetMailed:"Password link sent to {e}",remove:"Remove",
  tempPw:"Temporary password",userAddedMail:"User added. If email confirmation is on, they must open the confirmation email first.",
  hint:"Data is saved to your company workspace and syncs across devices.",authNote:"Accounts and company data are stored in Supabase. Only your company's members can see its data.",
+ demoTitle:"Sample data",demoSub:"This workspace contains sample formulas, projects, materials and equipment that came with the prototype. Remove them to keep only your own data. Anything you added stays.",demoBtn:"Remove sample data",
+ demoConfirm:"All sample content (formulas, projects, materials, equipment, tests and documents) will be removed from the workspace for every user. Anything you added is kept. Continue?",demoDone:"Removed {n} sample items",
  roleHelp:"Administrator: every screen plus user management · R&D: every screen with editing, except user management · Production: view projects, production sheet and labels only."});
 
 const SEP="\u0001",PREFS=["lang","cur","batch","serving"],SKIP=new Set([...PREFS,"users"]);
@@ -142,8 +146,25 @@ async function loadMembers(){const {data,error}=await sb.from("members").select(
 /* ---------- boot after sign-in ---------- */
 function clearOrg(){if(channel){sb.removeChannel(channel);channel=null}ORG=null;ORGNAME="";members=[];synced=new Map();lastSeen=null;
  for(const k of Object.keys(S))if(!SKIP.has(k))delete S[k];S.users=[];ME=null}
-function seedOrg(){const s=seed();s.tests=s.tests||seedTests();s.mats=s.mats||seedMats();s.approved=s.approved||seedApproved();s.evals=s.evals||[];
- for(const k of Object.keys(s))if(!SKIP.has(k))S[k]=s[k]}
+/* the prototype's sample data: used to tell demo items apart from the company's own */
+function demoState(){const s=seed();s.tests=s.tests||seedTests();s.mats=s.mats||seedMats();s.approved=s.approved||seedApproved();s.evals=s.evals||[];return s}
+const blankForm=()=>({name:{ar:"تركيبة جديدة",en:"New formula"},ver:1,proj:"",upd:today(),rows:[],proc:[]});
+/* a new company starts empty, with one blank formula so the workbench has something to open */
+function seedOrg(){const d=demoState();
+ for(const k of Object.keys(d))if(!SKIP.has(k))S[k]=Array.isArray(d[k])?[]:(d[k]&&typeof d[k]==="object")?{}:d[k];
+ S.forms={f1:blankForm()};S.cur="f1"}
+/* remove only the sample items (same ids as the prototype's demo data); everything the team added stays */
+function removeDemo(){const d=demoState();let n=0;
+ for(const k of Object.keys(d)){if(SKIP.has(k)||!S[k])continue;const dv=d[k];
+  if(Array.isArray(dv)&&Array.isArray(S[k])){const ids=new Set(dv.filter(x=>x&&x.id!=null).map(x=>String(x.id))),js=new Set(dv.map(x=>canon(x)));
+   const keep=S[k].filter(x=>!(x&&x.id!=null?ids.has(String(x.id)):js.has(canon(x))));n+=S[k].length-keep.length;S[k]=keep}
+  else if(dv&&typeof dv==="object"&&S[k]&&typeof S[k]==="object")for(const id of Object.keys(dv))if(id in S[k]){delete S[k][id];n++}}
+ const fids=new Set(Object.keys(S.forms||{}));
+ (S.projects||[]).forEach(p=>{if(Array.isArray(p.forms))p.forms=p.forms.filter(f=>fids.has(f))});
+ if(!S.forms||!Object.keys(S.forms).length){S.forms={["f"+Date.now().toString(36)]:blankForm()}}
+ if(!S.forms[S.cur])S.cur=Object.keys(S.forms)[0];
+ return n}
+const hasDemo=()=>{const d=demoState();return Object.keys(d.forms).some(f=>S.forms&&S.forms[f]&&canon(S.forms[f].name)===canon(d.forms[f].name))||(S.projects||[]).some(p=>d.projects.some(q=>q.id===p.id&&q.en===p.en))};
 async function boot(session){
  USER=session.user;bootedFor=USER.id;authInfo="";
  let ms=null;
@@ -272,7 +293,8 @@ vUsers=function(){const T=L(),R=r=>ROLES[r]?ROLES[r][lg()]:r;
   <label class="field">${T.role}<select id="nu_role">${Object.keys(ROLES).map(r=>`<option value="${r}" ${r==="rnd"?"selected":""}>${R(r)}</option>`).join("")}</select></label>
   <label class="field">${T.tempPw}<input id="nu_pw" type="password" autocomplete="new-password"></label></div>
   <div id="nuErr" class="warnline" role="alert"></div><button class="btn primary" type="submit" style="align-self:flex-start">${T.saveUser}</button></form>`;
- return header(T.users,T.usersSub)+`<div class="stack">${list}<div class="grid g2">${add}${mine}</div></div>`};
+ const demo=hasDemo()?`<div class="panel stack"><h2>${T.demoTitle}</h2><p class="sub" style="margin:0">${T.demoSub}</p><button class="btn" id="fxDemo" type="button" style="align-self:flex-start">${T.demoBtn}</button></div>`:"";
+ return header(T.users,T.usersSub)+`<div class="stack">${demo}${list}<div class="grid g2">${add}${mine}</div></div>`};
 
 bindUsers=function(){const T=L();
  v("pwForm").onsubmit=async e=>{e.preventDefault();const er=m=>v("pwErr").textContent=m;const cur=v("pw_cur").value,n1=v("pw_new").value,n2=v("pw_new2").value;
@@ -291,6 +313,7 @@ bindUsers=function(){const T=L();
    const r=await sb.rpc("add_member",{p_org:ORG,p_email:email,p_name:name,p_role:role});if(r.error)throw r.error;
    await loadMembers();render();toast(T.userAddedMail)}
   catch(x){btn.disabled=false;er(errText(x))}};
+ const db=v("fxDemo");if(db)db.onclick=()=>{if(!confirm(T.demoConfirm))return;const n=removeDemo();persist();render();toast(T.demoDone.replace("{n}",n))};
  document.querySelectorAll("[data-urole]").forEach(el=>el.onchange=()=>call("update_member",{p_org:ORG,p_user:el.dataset.urole,p_role:el.value,p_active:null}).then(ok=>ok&&toast(T.saved)));
  document.querySelectorAll("[data-ux]").forEach(b=>b.onclick=async()=>{const a=b.dataset.ux,u=S.users.find(x=>x.id===b.dataset.uid);if(!u)return;
   if(a==="mail"){const {error}=await sb.auth.resetPasswordForEmail(u.username,{redirectTo:APP_URL});toast(error?errText(error):T.resetMailed.replace("{e}",u.username));return}
