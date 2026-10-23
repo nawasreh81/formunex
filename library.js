@@ -11,14 +11,14 @@ Object.assign(T.ar,{lib:"مكتبة الكتب",libSub:"ارفع كتباً بص
  libNoText:"«{t}» لا يحتوي نصاً قابلاً للقراءة، فلم يُضف.",libNotPdf:"«{t}» صيغة غير مدعومة. المدعوم: PDF و Word (.docx) والصور (JPG / PNG).",libOcrQ:"«{t}» فيه {n} صفحة مصوّرة. قراءتها بالتعرّف الضوئي (OCR) تستغرق حوالي {m} دقيقة، ودقتها أقل من النص العادي. أبقِ الصفحة مفتوحة. متابعة؟",libOcr:"تعرّف ضوئي (OCR) على «{t}»: صفحة {p} من {n}",libOcrLoad:"تحميل أداة التعرّف الضوئي (أول مرة فقط)…",libFileFail:"حُفظ نص «{t}» لكن تعذّر رفع الملف الأصلي ({e}).",
  libErr:"تعذّر إضافة «{t}»: {e}",libResults:"{n} نتيجة",libNoRes:"لم أجد شيئاً في الكتب عن هذا.",libNeedCloud:"مكتبة الكتب تحتاج الاتصال بمساحة عمل الشركة (Supabase).",
  libNeedSql:"المكتبة غير مفعّلة في قاعدة البيانات بعد. شغّل ملف supabase/library.sql في Supabase مرة واحدة.",libRO:"يمكنك البحث والقراءة. رفع الكتب وحذفها للمدير وفريق البحث والتطوير.",
- libFromBooks:"من مكتبة الكتب:",libPage:"صفحة {p}",libAdded2:"أُضيف",libNoFile:"النص فقط"});
+ libFromBooks:"من مكتبة الكتب:",libAsking:"أبحث في مكتبة الكتب…",libAskNone:"لم أجد في الكتب فقرة تطابق سؤالك. جرّب كلمات أدق، مثل اسم المادة أو العملية (مثلاً: «ليسيثين» أو «تبلور السكر»).",libAskEmpty:"لا توجد كتب في المكتبة بعد. ارفع كتاباً من «مكتبة الكتب» ثم اسألني.",libAskSql:"مكتبة الكتب غير مفعّلة بعد في قاعدة البيانات. شغّل ملف supabase/library.sql في Supabase مرة واحدة، ثم أعد فتح التطبيق.",libAskErr:"تعذّر البحث في الكتب الآن ({e}). تأكد من الاتصال بالإنترنت.",libChunks:"مقاطع",libNoIdx:"لم يُفهرس، احذفه وارفعه مجدداً",libPage:"صفحة {p}",libAdded2:"أُضيف",libNoFile:"النص فقط"});
 Object.assign(T.en,{lib:"Book library",libSub:"Upload books as PDF, Word or images to use as references. The assistant searches them and shows matching passages with the book and page.",
  libUpload:"Upload books (PDF / Word / images)",libSearch:"Search the books…",libBooks:"Books",libNone:"No books yet. Upload your first book.",libPages:"{n} pages",libOpen:"Open",libDel:"Delete",
  libDelQ:"Delete “{t}” and its text from the library for everyone?",libReading:"Reading “{t}”: page {p} of {n}",libSaving:"Saving “{t}”…",libAdded:"Added “{t}” ({n} pages)",
  libNoText:"“{t}” has no readable text, so it was not added.",libNotPdf:"“{t}” is not a supported format. Supported: PDF, Word (.docx) and images (JPG / PNG).",libOcrQ:"“{t}” has {n} scanned pages. Reading them with OCR takes about {m} min and is less accurate than normal text. Keep this page open. Continue?",libOcr:"OCR on “{t}”: page {p} of {n}",libOcrLoad:"Loading the OCR engine (first time only)…",libFileFail:"Saved the text of “{t}” but couldn't upload the original file ({e}).",
  libErr:"Couldn't add “{t}”: {e}",libResults:"{n} results",libNoRes:"Nothing in the books about this.",libNeedCloud:"The book library needs the company workspace connection (Supabase).",
  libNeedSql:"The library isn't set up in the database yet. Run supabase/library.sql in Supabase once.",libRO:"You can search and read. Uploading and deleting books is for administrators and R&D.",
- libFromBooks:"From the book library:",libPage:"page {p}",libAdded2:"Added",libNoFile:"text only"});
+ libFromBooks:"From the book library:",libAsking:"Searching the book library…",libAskNone:"I found no passage in the books that matches your question. Try more specific words, like an ingredient or process name.",libAskEmpty:"There are no books in the library yet. Upload one in “Book library”, then ask me.",libAskSql:"The book library isn't set up in the database yet. Run supabase/library.sql in Supabase once, then reopen the app.",libAskErr:"Couldn't search the books right now ({e}). Check the internet connection.",libChunks:"Passages",libNoIdx:"Not indexed: delete and upload again",libPage:"page {p}",libAdded2:"Added",libNoFile:"text only"});
 
 IC.lib='<path d="M4 19V5a2 2 0 0 1 2-2h5v16H6a2 2 0 0 0-2 2z"/><path d="M20 19V5a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2z"/><path d="M4 21h7M13 21h7"/>';
 ALL_TABS.splice(ALL_TABS.indexOf("know")+1,0,"lib");
@@ -28,8 +28,12 @@ const STRIP=/^(وال|بال|كال|فال|لل|ال)(?=..)/;
 function norm(s){return String(s||"").normalize("NFKC").toLowerCase()
  .replace(/[ً-ٰٟـ]/g,"").replace(/[إأآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/ؤ/g,"و").replace(/ئ/g,"ي")
  .replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(Boolean).map(w=>w.replace(STRIP,"")).join(" ")}
-const STOP=new Set("في من على الى عن مع او ان هذا هذه ذلك التي الذي كيف ما ماذا هل لماذا متى اين كم و يا the a an of to in on for and or is are how what why which with from by".split(" ").map(w=>norm(w)));
-const queryOf=q=>norm(q).split(" ").filter(w=>w.length>1&&!STOP.has(w)).slice(0,12).join(" ");
+const STOP=new Set("في من على الى عن مع او ان هذا هذه ذلك التي الذي الذين كيف ما ماذا ماهي ماهو هل لماذا متى اين كم و يا هي هو هم انا انت لي لنا ممكن يمكن اريد اعرف اشرح قل عند بين ثم كل اي ايش شو حول اكثر افضل لو اذا كتاب كتب الكتاب الكتب the a an of to in on for and or is are how what why which with from by do does did i you my your can could should about".split(" ").map(w=>norm(w)));
+// light stemming for the query only: passages are matched by substring on the server, so a shorter stem still finds
+// "بالليسيثين", "والسكريات" or "emulsifiers"
+const stem=w=>{if(/^[a-z]/.test(w))return w.length>5?w.replace(/(ies|es|s|ing|ed)$/,""):w;
+ if(w.length>4)w=w.replace(/^[وفبلك]/,"");if(w.length>4)w=w.replace(/(ات|ون|ين|ها|هم|يه|يا)$/,"");if(w.length>4)w=w.replace(/[هي]$/,"");return w};
+const queryOf=q=>[...new Set(norm(q).split(" ").filter(w=>w.length>1&&!STOP.has(w)).map(stem).filter(w=>w.length>2))].slice(0,12).join(" ");
 window.FX_LIB_TEST={norm,queryOf};
 
 /* split one page into passages of about 900 characters, at sentence or word boundaries */
@@ -43,8 +47,8 @@ let books=null,loading=false,missing=false,q="",results=null,searching=false,pro
 const ctx=()=>window.FX_CTX?window.FX_CTX():null;
 const fill=(s,o)=>Object.entries(o).reduce((a,[k,v])=>a.split("{"+k+"}").join(v),s);
 async function loadBooks(){const c=ctx();if(!c||!c.org||loading)return;loading=true;
- const {data,error}=await c.sb.from("books").select("id,title,file_name,file_path,pages,created_at").eq("org_id",c.org).order("created_at",{ascending:false});
- loading=false;if(error){missing=/books|relation|schema cache|does not exist/i.test(error.message||"");books=[];}else{missing=false;books=data}
+ const {data,error}=await c.sb.from("books").select("id,title,file_name,file_path,pages,created_at,book_chunks(count)").eq("org_id",c.org).order("created_at",{ascending:false});
+ loading=false;if(data)data.forEach(b=>{b.chunks=b.book_chunks&&b.book_chunks[0]?b.book_chunks[0].count:0});if(error){missing=/books|relation|schema cache|does not exist/i.test(error.message||"");books=[];}else{missing=false;books=data}
  if(tab==="lib")render()}
 async function search(text,limit){const c=ctx(),qq=queryOf(text);if(!c||!c.org||!qq)return [];
  const {data,error}=await c.sb.rpc("search_books",{p_org:c.org,p_query:qq,p_limit:limit||10});if(error)throw error;return data||[]}
@@ -67,8 +71,8 @@ window.vLib=function(){const T=L(),c=ctx();
  if(missing)return header(T.lib,T.libSub)+`<div class="panel"><p class="warnline" style="margin:0">${T.libNeedSql}</p></div>`;
  const up=c.canWrite?`<label class="btn primary" style="cursor:pointer">＋ ${T.libUpload}<input id="libFile" type="file" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.webp,application/pdf,image/*" multiple hidden ${busy?"disabled":""}></label>`:`<span class="sub" style="font-size:12.5px">${T.libRO}</span>`;
  const res=results===null?"":`<div class="panel stack"><h2 style="margin:0">${results.length?fill(T.libResults,{n:results.length}):T.libNoRes}</h2>${results.map(r=>resultHTML(r,q)).join("")}</div>`;
- const list=books.length?`<div class="tablewrap"><table><thead><tr><th>${T.libBooks}</th><th class="num">${fill(T.libPages,{n:""}).trim()}</th><th>${T.libAdded2}</th><th></th></tr></thead><tbody>
-  ${books.map(b=>`<tr><td><b>${esc(b.title)}</b></td><td class="num">${b.pages}</td><td style="font-size:12.5px"><bdi dir="ltr" style="font-family:var(--f-mono)">${esc(String(b.created_at).slice(0,10))}</bdi></td>
+ const list=books.length?`<div class="tablewrap"><table><thead><tr><th>${T.libBooks}</th><th class="num">${fill(T.libPages,{n:""}).trim()}</th><th class="num">${T.libChunks}</th><th>${T.libAdded2}</th><th></th></tr></thead><tbody>
+  ${books.map(b=>`<tr><td><b>${esc(b.title)}</b></td><td class="num">${b.pages}</td><td class="num">${b.chunks?b.chunks:`<span class="warnline" style="font-size:12px">0 · ${T.libNoIdx}</span>`}</td><td style="font-size:12.5px"><bdi dir="ltr" style="font-family:var(--f-mono)">${esc(String(b.created_at).slice(0,10))}</bdi></td>
    <td style="white-space:nowrap">${b.file_path?`<button class="mini" data-lopen="${b.id}">${T.libOpen}</button>`:`<span class="sub" style="font-size:12px">${T.libNoFile}</span>`}${c.canWrite?`<button class="x" data-ldel="${b.id}" aria-label="${T.libDel}">✕</button>`:""}</td></tr>`).join("")}
   </tbody></table></div>`:`<p class="sub" style="margin:0">${T.libNone}</p>`;
  return header(T.lib,T.libSub,up)+`<div class="stack">
@@ -137,12 +141,21 @@ async function addBooks(files){const c=ctx();if(!c||!c.org||busy)return;busy=tru
    toast(fill(T.libErr,{t:title,e:String(x&&x.message||x)}))}}
  await endOcr();busy=false;prog="";books=null;loadBooks()}
 
-/* assistant: after the usual answer, add matching passages from the books */
-const baseAnswer=answer;
-answer=function(text){const out=baseAnswer(text);const c=ctx();
- if(window.FX_CLOUD&&c&&c.org&&queryOf(text))search(text,4).then(rs=>{if(!rs.length)return;
-  chatLog.push(["ai",`<div class="mh">${L().libFromBooks}</div>`+rs.map(r=>resultHTML(r,text)).join("")]);if(tab==="ai")render()}).catch(()=>{});
- return out};
+/* assistant: answer from the books. The built-in answers need a formula and can fail on an empty workspace,
+   so when they fail or find nothing, the books give the answer (or a clear message why not). */
+const baseAnswer=answer;let waitN=0;
+const NOTHING=["لم أجد إجابة في البيانات المتاحة","I couldn't find that in the available data"];
+answer=function(text){let out=null;try{out=baseAnswer(text)}catch(e){console.warn("assistant",e)}
+ const c=ctx(),T=L();
+ if(!window.FX_CLOUD||!c||!c.org||!queryOf(text))return out==null?T.libAskNone:out;
+ const generic=out==null||NOTHING.some(s=>String(out).includes(s));const id="lw"+(++waitN);
+ const put=html=>{const k=chatLog.findIndex(m=>m[0]==="ai"&&String(m[1]).includes('data-lw="'+id+'"'));
+  if(k>=0)chatLog[k]=["ai",html];else if(!generic)chatLog.push(["ai",html]);else return;if(tab==="ai")render()};
+ search(text,4).then(rs=>{if(rs.length)return put(`<div class="mh">${T.libFromBooks}</div>`+rs.map(r=>resultHTML(r,text)).join(""));
+  if(!generic)return;
+  return c.sb.from("books").select("id",{count:"exact",head:true}).eq("org_id",c.org).then(r=>put(r.error?(/books|relation|schema cache|does not exist/i.test(r.error.message||"")?T.libAskSql:fill(T.libAskErr,{e:r.error.message})):r.count?T.libAskNone:T.libAskEmpty))})
+ .catch(e=>{if(generic)put(/search_books|function|schema cache|does not exist/i.test(String(e&&e.message))?T.libAskSql:fill(T.libAskErr,{e:String(e&&e.message||e)}))});
+ return generic?`<span class="sub" data-lw="${id}">${T.libAsking}</span>`:out};
 
 const st=document.createElement("style");
 st.textContent=`.libres{border-top:1px solid var(--line);padding-top:10px;margin-top:4px}.libres:first-of-type{border-top:0}

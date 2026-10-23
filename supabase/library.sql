@@ -53,18 +53,23 @@ grant select, insert, update, delete on public.books to authenticated;
 grant select, insert on public.book_chunks to authenticated;
 grant usage, select on sequence public.book_chunks_id_seq to authenticated;
 
--- Search: any of the words (prefix match), best passages first. p_query should already be normalised.
+-- Search: passages that contain the most query words first (whole words, prefixes or parts of words, so Arabic
+-- words with attached letters like و / ب / ال still match). p_query should already be normalised by the app.
 create or replace function public.search_books(p_org uuid, p_query text, p_limit int default 10)
 returns table (book_id uuid, title text, page int, content text, rank real)
 language sql stable security invoker set search_path = public as $$
-  with q as (
-    select to_tsquery('simple', string_agg(w || ':*', ' | ')) as tq
-    from regexp_split_to_table(regexp_replace(coalesce(p_query, ''), '[&|!():*<>''\\]', ' ', 'g'), '\s+') as w
-    where length(w) > 1
+  with w as (
+    select distinct x as w
+    from regexp_split_to_table(regexp_replace(lower(coalesce(p_query, '')), '[&|!():*<>''\\%_]', ' ', 'g'), '\s+') as x
+    where length(x) > 1
+    limit 12
+  ), q as (
+    select to_tsquery('simple', string_agg(w || ':*', ' | ')) as tq, array_agg('%' || w || '%') as pats from w
   )
-  select c.book_id, b.title, c.page, c.content, ts_rank_cd(c.tsv, q.tq) as rank
+  select c.book_id, b.title, c.page, c.content,
+         ((select count(*) from w where position(w.w in c.norm) > 0) + ts_rank_cd(c.tsv, q.tq))::real as rank
   from public.book_chunks c join public.books b on b.id = c.book_id, q
-  where c.org_id = p_org and q.tq is not null and c.tsv @@ q.tq
+  where c.org_id = p_org and q.tq is not null and (c.tsv @@ q.tq or c.norm like any (q.pats))
   order by rank desc, c.page
   limit greatest(1, least(coalesce(p_limit, 10), 50))
 $$;

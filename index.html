@@ -500,7 +500,7 @@ const L=()=>T[S.lang]; const lg=()=>S.lang;
 const fmt=(n,d=1)=>Number(n).toLocaleString(lg()==="ar"?"ar-SA-u-nu-latn":"en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const ingName=k=>ING[k]?ING[k][lg()]:k;
-const fname=f=>`${S.forms[f].name[lg()]} · v${S.forms[f].ver}`;
+const fname=f=>S.forms[f]?`${S.forms[f].name[lg()]} · v${S.forms[f].ver}`:"—";
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),1800)}
 
 /* ---------- calculations ---------- */
