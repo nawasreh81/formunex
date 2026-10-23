@@ -76,12 +76,6 @@ $$;
 revoke all on function public.search_books(uuid, text, int) from public, anon;
 grant execute on function public.search_books(uuid, text, int) to authenticated;
 
--- Book files: private bucket, one folder per company (<org id>/<book id>.<ext>)
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('library', 'library', false, 52428800, array['application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','image/webp','image/gif','image/bmp'])
-on conflict (id) do update set allowed_mime_types = excluded.allowed_mime_types, file_size_limit = excluded.file_size_limit;
-
 create or replace function public.org_role_from_path(p_name text) returns text
 language sql stable security definer set search_path = public as $$
   select case when split_part(p_name, '/', 1) ~ '^[0-9a-f-]{36}$'
@@ -89,12 +83,29 @@ language sql stable security definer set search_path = public as $$
 $$;
 grant execute on function public.org_role_from_path(text) to authenticated;
 
+-- Book files: private bucket, one folder per company (<org id>/<book id>.<ext>).
+-- If this part fails (for example no permission on the storage schema), the books' text still works:
+-- only the original files are not kept.
+do $storage$ begin
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('library', 'library', false, 52428800, array['application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document','image/jpeg','image/png','image/webp','image/gif','image/bmp'])
+on conflict (id) do update set allowed_mime_types = excluded.allowed_mime_types, file_size_limit = excluded.file_size_limit;
+
 drop policy if exists library_read on storage.objects;
 create policy library_read on storage.objects for select to authenticated
   using (bucket_id = 'library' and public.org_role_from_path(name) is not null);
 drop policy if exists library_insert on storage.objects;
 create policy library_insert on storage.objects for insert to authenticated
   with check (bucket_id = 'library' and public.org_role_from_path(name) in ('admin','rnd'));
+drop policy if exists library_update on storage.objects;
+create policy library_update on storage.objects for update to authenticated
+  using (bucket_id = 'library' and public.org_role_from_path(name) in ('admin','rnd'));
 drop policy if exists library_delete on storage.objects;
 create policy library_delete on storage.objects for delete to authenticated
   using (bucket_id = 'library' and public.org_role_from_path(name) in ('admin','rnd'));
+exception when others then
+  raise warning 'library storage not set up (% %). Book text still works; original files will not be kept.', sqlstate, sqlerrm;
+end $storage$;
+
+select 'FormuNex library ready' as result;

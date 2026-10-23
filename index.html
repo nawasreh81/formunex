@@ -558,7 +558,7 @@ function vDash(){
  </div>
  <div class="grid g3">
   <div class="panel"><h2>${L().projects}</h2>
-   ${S.projects.map(p=>{const f=p.forms[p.forms.length-1];const c=f?calc(f):null;return `<div class="proj"><div style="min-width:0"><h3>${esc(p[lg()])}</h3><div class="meta">${esc(p.owner)} · ${p.due}${c?` · ${fmt(c.costKg,2)} ${lg()==="ar"?"ر.س/كغ":"SAR/kg"}`:""}</div></div><span class="pill st-${p.stage}">${L().stage[p.stage]}</span>${f?`<button class="btn ghost" data-open="${f}">${L().openWb}</button>`:"<span></span>"}</div>`}).join("")}
+   ${S.projects.map(p=>{const f=[...p.forms].reverse().find(x=>S.forms[x]);const c=f?calc(f):null;return `<div class="proj"><div style="min-width:0"><h3>${esc(p[lg()])}</h3><div class="meta">${esc(p.owner)} · ${p.due}${c?` · ${fmt(c.costKg,2)} ${lg()==="ar"?"ر.س/كغ":"SAR/kg"}`:""}</div></div><span class="pill st-${p.stage}">${L().stage[p.stage]}</span>${f?`<button class="btn ghost" data-open="${f}">${L().openWb}</button>`:"<span></span>"}</div>`}).join("")}
   </div>
   <div class="panel"><h2>${L().recent}</h2><ul class="feed">${S.feed.map(([d,f,k])=>`<li><time>${d}</time>${esc(S.forms[f]?S.forms[f].name[lg()]:"")} — ${feedTxt[k]?feedTxt[k][lg()]:esc(k)}</li>`).join("")}</ul></div>
  </div>`;
