@@ -10,7 +10,7 @@
   "orientation": "any",
   "dir": "rtl",
   "lang": "ar",
-  "background_color": "#F3F5F1",
+  "background_color": "#0B0B0B",
   "theme_color": "#16231D",
   "categories": ["productivity", "business", "food"],
   "icons": [
